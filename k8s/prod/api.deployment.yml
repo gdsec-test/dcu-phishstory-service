@@ -1,0 +1,67 @@
+---
+apiVersion: "extensions/v1beta1"
+kind: "Deployment"
+metadata:
+  name: "phishstory-service"
+  namespace: "abuse-api-prod"
+  labels:
+    app: "phishstory-service"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  template:
+    metadata:
+      labels:
+        app: "phishstory-service"
+    spec:
+      imagePullSecrets:
+        -
+          name: "k8s-artifactory-creds"
+      containers:
+        -
+          name: "api"
+          imagePullPolicy: "Always"
+          image: "artifactory.secureserver.net:10014/docker-dcu-local/phishstory-service:prod"
+#          livenessProbe:
+#            httpGet:
+#              path: /v1/abuse/tickets/health
+#              port: 5000
+#            initialDelaySeconds: 10
+#            periodSeconds: 10
+          env:
+          - name: BUILD_DATE
+            value: 'THIS_STRING_IS_REPLACED_DURING_BUILD'
+#          - name: HTTP_ONLY
+#            value: 'true'
+#          - name: REDIS_HOST
+#            value: redis.abuse-api-dev.svc.cluster.local
+          - name: API_INSTANCE
+            value: SNOW
+          - name: API_MODE
+            value: PROD
+          - name: KEYFILE
+            value: /keyfiles/key.txt
+          - name: SNOW_PASS
+            valueFrom:
+              secretKeyRef:
+                name: svc-snow
+                key: password
+          - name: BROKER_PASS
+            valueFrom:
+              secretKeyRef:
+                name: amqp-api
+                key: password
+          - name: DB_PASS
+            valueFrom:
+              secretKeyRef:
+                name: db-cmap-service
+                key: password
+          volumeMounts:
+          - name: encryption-keys
+            mountPath: /keyfiles
+            readOnly: true
+
+      volumes:
+        - name: encryption-keys
+          secret:
+            secretName: encryption-key-files

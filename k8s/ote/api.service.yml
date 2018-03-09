@@ -1,0 +1,18 @@
+---
+  kind: "Service"
+  apiVersion: "v1"
+  metadata:
+    labels:
+      app: "phishstory-service"
+    # this name is accessible via cluster DNS
+    # ("kelvin-api" or "phishstory-service.<namespace>.svc.cluster.local")
+    name: "phishstory-service"
+    namespace: abuse-api-ote
+  spec:
+    ports:
+      -
+        name: "phishstory-service"
+        port: 5000
+        targetPort: 5000
+    selector:
+      app: "phishstory-service"

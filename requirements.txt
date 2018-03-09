@@ -1,0 +1,6 @@
+dcdatabase
+requests
+celery
+flask
+pyyaml
+grpcio

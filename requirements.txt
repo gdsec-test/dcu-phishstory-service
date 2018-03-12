@@ -1,6 +1,5 @@
-dcdatabase
+PyYAML
 requests
 celery
-flask
-pyyaml
 grpcio
+dcdatabase

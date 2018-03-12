@@ -64,3 +64,44 @@ Then regenerate the stub files using the following command
 ```
 python -m grpc_tools.protoc -I./pb/ --python_out=./service/grpc_stub --grpc_python_out=./service/grpc_stub ./pb/phishstory-service.proto 
 ```
+
+
+## Example Client Implementation
+```
+import logging
+import grpc
+
+import service.grpc_stub.phishstory_pb2
+import service.grpc_stub.phishstory_pb2_grpc
+
+logger = logging.basicConfig()
+
+class PhishstoryServiceClient:
+    def __init__(self, url):
+        self._logger = logging.getLogger(__name__)
+        self._url = url
+
+    def get_ticket(self, ticketId):
+        channel = grpc.insecure_channel(self._url)
+        ready_future = grpc.channel_ready_future(channel)
+        stub = service.grpc_stub.phishstory_pb2_grpc.PhishstoryStub(channel)
+
+        resp = None
+        try:
+            ready_future.result(timeout=5)
+        except grpc.FutureTimeoutError:
+            self._logger.error("Unable to connect to: {}".format(self._url))
+        else:
+            try:
+                resp = stub.GetTicket(service.grpc_stub.phishstory_pb2.GetTicketRequest(ticketId=ticketId), timeout=5)
+            except grpc.RpcError as e:
+                self._logger.error("Unable to perform GetTicket on ticket {}".format(ticketId))
+        finally:
+            return resp
+
+
+if __name__ == '__main__':
+    client = PhishstoryServiceClient("localhost:5000")
+    resp = client.get_ticket("DCU000289618")
+    logger.info("Response: {}".format(resp))
+```

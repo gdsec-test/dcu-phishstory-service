@@ -2,8 +2,8 @@ import logging.config
 import os
 import time
 
-import grpc
 import yaml
+import grpc
 from celery import Celery
 from concurrent import futures
 
@@ -60,7 +60,7 @@ class API(PhishstoryServicer):
 
         # TO-DO this may need to change
         res = self._api.get_ticket_info({'ticketId': request.ticketId})
-        return GetTicketResponse(res)
+        return GetTicketResponse(ticketId=res.get('ticketId'))
 
     def GetTickets(self, request, context):
         logger.info("Received GetTickets Request: {}".format(request))
@@ -93,6 +93,7 @@ def serve():
     logger.info("Listening on port 5000...")
     server.add_insecure_port('[::]:5000')
     server.start()
+
     try:
         while True:
             time.sleep(_ONE_DAY_IN_SECONDS)

@@ -3,8 +3,6 @@ import logging
 import urllib
 
 from dcdatabase.phishstorymongo import PhishstoryMongo
-from flask import Response
-from flask import make_response
 
 from service.api.interface import DataStore
 from service.connectors.snow import SNOWHelper
@@ -68,10 +66,12 @@ class SNOWAPI(DataStore):
         if 'result' not in query_dict:
             self._logger.error("A database error occurred when querying for {}".format(source))
 
-            api_resp = make_response('{{"message":"{We are unable to complete your request at this time}"}}')
-            api_resp.status_code = self.DEFAULT_ERROR_CODE
+            # api_resp = make_response('{{"message":"{We are unable to complete your request at this time}"}}')
+            # api_resp.status_code = self.DEFAULT_ERROR_CODE
+            #
+            # return api_resp
 
-            return api_resp
+            return None
 
         return bool(query_dict['result'])
 
@@ -91,15 +91,15 @@ class SNOWAPI(DataStore):
             args['sysparm_fields'] = 'u_number'
 
             is_duplicate = self.check_dupe(args.get('source'))
-            if isinstance(is_duplicate, Response):
-                return is_duplicate
+            # if isinstance(is_duplicate, Response):
+            #     return is_duplicate
 
             # Check to see if the abuse report has been previously submitted for this URI
             if is_duplicate:
                 message = "We have already been informed of the abuse reported at this URL and are " \
                           "looking into the matter: {url}".format(url=args.get('source'))
-                api_resp = make_response('{{"message":"{msg}"}}'.format(msg=message))
-                api_resp.status_code = self.DEFAULT_ERROR_CODE
+                # api_resp = make_response('{{"message":"{msg}"}}'.format(msg=message))
+                # api_resp.status_code = self.DEFAULT_ERROR_CODE
 
             else:
 
@@ -107,10 +107,10 @@ class SNOWAPI(DataStore):
                                                         self._create_json_string(args))
 
                 resp_dict = json.loads(response.content)
-
+                api_resp = {'u_number': resp_dict.get('result', {}).get('u_number')}
                 # api_resp is what ends up being returned to the user who submitted the abuse report
-                api_resp = make_response(json.dumps({'u_number': resp_dict.get('result', {}).get('u_number')}))
-                api_resp.status_code = response.status_code
+                # api_resp = make_response(json.dumps({'u_number': resp_dict.get('result', {}).get('u_number')}))
+                # api_resp.status_code = response.status_code
 
                 # SNOW ticket created successfully
                 if response.status_code == 201:
@@ -134,9 +134,10 @@ class SNOWAPI(DataStore):
                         self._celery.send_task('run.process', (json_for_middleware,))
             return api_resp
         except Exception as e:
-            api_resp = make_response('{{"message":"EXCEPTION: %s"}}' % e.message)
-            api_resp.status_code = self.DEFAULT_ERROR_CODE
-            return api_resp
+            # api_resp = make_response('{{"message":"EXCEPTION: %s"}}' % e.message)
+            # api_resp.status_code = self.DEFAULT_ERROR_CODE
+            # return api_resp
+            return None
 
     def update_ticket(self, args):
         """
@@ -167,25 +168,27 @@ class SNOWAPI(DataStore):
                 # api_resp is what gets returned to the user api call
                 self._logger.info("RESPONSE CONTENT: {}".format(response.content))
 
-                api_resp = make_response(response.content)
-                api_resp.status_code = response.status_code
+                # api_resp = make_response(response.content)
+                # api_resp.status_code = response.status_code
 
                 if response.status_code == 200:
-                    api_resp.status_code = 204
+                    # api_resp.status_code = 204
                     if args.get('closed'):
                         self._db.close_incident(args['ticketId'], dict(close_reason=args.get('close_reason')))
 
-            else:
-                api_resp = make_response(sys_id_return_val[0])
-                api_resp.status_code = sys_id_return_val[1]
+            # else:
+                # api_resp = make_response(sys_id_return_val[0])
+                # api_resp.status_code = sys_id_return_val[1]
 
         except Exception as e:
             self._logger.error("Error updating ticket {}:".format(args['ticketId']), exc_info=1)
-            api_resp = make_response('{{"message":"EXCEPTION: {msg}"}}'.format(msg=e.message))
-            api_resp.status_code = self.DEFAULT_ERROR_CODE
+            # api_resp = make_response('{{"message":"EXCEPTION: {msg}"}}'.format(msg=e.message))
+            # api_resp.status_code = self.DEFAULT_ERROR_CODE
+            return None
 
         finally:
-            return api_resp
+            self._logger.info("unimplemented")
+            # return api_resp
 
     def get_tickets(self, args):
         """
@@ -221,8 +224,8 @@ class SNOWAPI(DataStore):
             response = self._datastore.get_request(query)
 
             # api_resp is what gets returned to the user api call
-            api_resp = make_response(response.content)
-            api_resp.status_code = response.status_code
+            # api_resp = make_response(response.content)
+            # api_resp.status_code = response.status_code
 
             # Service now call was successful
             if response.status_code == 200:
@@ -238,11 +241,13 @@ class SNOWAPI(DataStore):
                 ticket_dict['ticket_ids'] = ticket_numbers
 
                 # This gets returned to the user in the RAW
-                api_resp.data = json.dumps(ticket_dict)
+                # api_resp.data = json.dumps(ticket_dict)
+                api_resp = json.dumps(ticket_dict)
 
         except Exception as e:
-            api_resp = make_response('{{"message":"EXCEPTION: {msg}"}}'.format(msg=e.message))
-            api_resp.status_code = self.DEFAULT_ERROR_CODE
+            self._logger.error("Exception {}".format(e.message))
+            # api_resp = make_response('{{"message":"EXCEPTION: {msg}"}}'.format(msg=e.message))
+            # api_resp.status_code = self.DEFAULT_ERROR_CODE
 
         finally:
             return api_resp
@@ -253,28 +258,34 @@ class SNOWAPI(DataStore):
         :return: a response object containing a dictionary of all values we want to return to a user,
             from a single ticket
         """
+        api_resp = None
 
         try:
             query = '/{table_name}?sysparam_limit=1&u_number={ticket_id}'.format(
                 table_name=self.TICKET_TABLE_NAME,
-                ticket_id=args('ticketId'))
+                ticket_id=args.get('ticketId'))
             response = self._datastore.get_request(query)
 
             # api_resp is what gets returned to the user api call
-            api_resp = make_response(response.content)
-            api_resp.status_code = response.status_code
+            # api_resp = make_response(response.content)
+            # api_resp.status_code = response.status_code
+            self._logger.info("Response: {}".format(response))
 
             if response.status_code == 200:
                 query_dict = json.loads(response.content)
+                self._logger.info("query dict: {}".format(query_dict))
+
 
                 if query_dict.get('result'):
-                    api_resp.data = query_dict['result'][0]
-                else:
-                    api_resp.status_code = 404
+                    api_resp = query_dict['result'][0]
+                    # api_resp.data = query_dict['result'][0]
+                # else:
+                #     api_resp.status_code = 404
 
         except Exception as e:
-            api_resp = make_response('{{"message":"EXCEPTION: {msg}"}}'.format(msg=e.message))
-            api_resp.status_code = 500
+            self._logger.error("Exception: {}".format(e.message))
+            # api_resp = make_response('{{"message":"EXCEPTION: {msg}"}}'.format(msg=e.message))
+            # api_resp.status_code = 500
 
         finally:
             return api_resp

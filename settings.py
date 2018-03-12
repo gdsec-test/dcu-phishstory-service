@@ -4,7 +4,7 @@ import urllib
 from encryption_helper import PasswordDecrypter
 
 
-class AppConfig:
+class AppConfig(object):
     SNOW_URL = None
 
     SNOW_USER = 'dcuapi'
@@ -30,6 +30,9 @@ class ProductionAppConfig(AppConfig):
     DB_HOST = '10.22.9.209'
     DB_USER = 'sau_p_phish'
 
+    def __init__(self):
+        super(ProductionAppConfig, self).__init__()
+
 
 class OTEAppConfig(AppConfig):
     SNOW_URL = 'https://godaddytest.service-now.com/api/now/table'
@@ -38,6 +41,9 @@ class OTEAppConfig(AppConfig):
     DB = 'otephishstory'
     DB_HOST = '10.22.9.209'
     DB_USER = 'sau_o_phish'
+
+    def __init__(self):
+        super(OTEAppConfig, self).__init__()
 
 
 class DevelopmentAppConfig(AppConfig):
@@ -48,6 +54,8 @@ class DevelopmentAppConfig(AppConfig):
     DB_HOST = '10.22.188.208'
     DB_USER = 'devuser'
 
+    def __init__(self):
+        super(DevelopmentAppConfig, self).__init__()
 
 class TestAppConfig(AppConfig):
     SNOW_URL = 'https://godaddydev.service-now.com/api/now/table'

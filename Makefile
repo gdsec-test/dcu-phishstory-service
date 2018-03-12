@@ -6,7 +6,7 @@ COMMIT=
 BUILD_BRANCH=origin/master
 SHELL=/bin/bash
 
-PRIVDEPS="git@github.secureserver.net:ITSecurity/blindAl.git" \
+PRIVATE_PIPS="git@github.secureserver.net:ITSecurity/blindAl.git" \
 "git@github.secureserver.net:ITSecurity/dcdatabase.git"
 
 .PHONY: prep dev stage ote prod clean dev-deploy ote-deploy prod-deploy
@@ -17,24 +17,9 @@ all: prep dev
 prep:
 	@echo "----- preparing $(REPONAME) build -----"
 	# stage pips we will need to install in Docker build
-	mkdir -p $(BUILDROOT)/private_deps && rm -rf $(BUILDROOT)/private_deps/*
-	for entry in $(PRIVDEPS) ; do \
-		IFS=";" read repo revision <<< "$$entry" ; \
-		cd $(BUILDROOT)/private_deps && git clone $$repo ; \
-		if [ "$$revision" != "" ] ; then \
-			name=$$(echo $$repo | awk -F/ '{print $$NF}' | sed -e 's/.git$$//') ; \
-			cd $(BUILDROOT)/private_deps/$$name ; \
-			current_revision=$$(git rev-parse HEAD) ; \
-			echo $$repo HEAD is currently at revision: $$current_revision ; \
-			echo Dependency specified in the Makefile for $$name is set to revision: $$revision ; \
-			if [ "$$revision" != "$$current_revision" ] ; then \
-				read -p "Update to latest revision? (Y/N): " response ; \
-				if [[ $$response == 'N' || $$response == 'n' ]] ; then \
-					echo Reverting to revision: $$revision in $$repo ; \
-					git reset --hard $$revision; \
-				fi ; \
-			fi ; \
-		fi ; \
+	mkdir -p $(BUILDROOT)/private_pips && rm -rf $(BUILDROOT)/private_pips/*
+	for entry in $(PRIVATE_PIPS) ; do \
+		cd $(BUILDROOT)/private_pips && git clone $$entry ; \
 	done
 
 	# copy the app code to the build root

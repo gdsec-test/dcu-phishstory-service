@@ -1,5 +1,5 @@
-import logging
 import json
+import logging
 import urllib
 
 from dcdatabase.phishstorymongo import PhishstoryMongo
@@ -10,7 +10,8 @@ from service.api.interface import DataStore
 from service.connectors.snow import SNOWHelper
 
 
-class ServiceNowDataStore(DataStore):
+class SNOW(DataStore):
+
     HTML2SNOW = {
         'limit': 'sysparm_limit',
         'offset': 'sysparm_offset',

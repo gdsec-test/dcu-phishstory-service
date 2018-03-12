@@ -1,0 +1,81 @@
+syntax="proto3";
+
+package phishstoryservice;
+
+import "google/protobuf/timestamp.proto";
+
+message CreateTicketRequest{
+    string type=1;
+    string source=2;
+    string target=3;
+    string proxy=4;
+    bool   intentional=5;
+    string reporter=6;
+    string info=7;
+    string infoUrl=8;
+}
+
+message CreateTicketResponse{
+    string ticketId=1;
+}
+
+message GetTicketRequest{
+    string ticketId=1;
+}
+
+message GetTicketResponse{
+    string ticketId=1;
+    string closed=2;
+    string type=3;
+    string source=4;
+    string sourceDomainOrIp=5;
+    string reporter=6;
+    string target=7;
+    bool isTicketClosed=8;
+    string created=9;
+    bool intentional=10;
+    string info=11;
+    string infoUrl=12;
+    string proxy=13;
+}
+
+message UpdateTicketRequest{
+    string ticketId=1;
+    string type=2;
+    bool isTicketClosed=3;
+    string target=4;
+}
+
+message UpdateTicketResponse{
+    string ticketId=1;
+    string type=2;
+    bool isTicketClosed=3;
+    string target=4;
+    google.protobuf.Timestamp closed=5;
+    string close_reason=6;
+}
+
+message GetTicketsRequest{
+    string type=1;
+    bool isTicketClosed=2;
+    string source=3;
+    string sourceDomainOrIp=4;
+    string target=5;
+    google.protobuf.Timestamp created=6;
+    google.protobuf.Timestamp closed=7;
+    bool intentional=8;
+    string reporter=9;
+    string infoUrl=10;
+    string proxy=11;
+}
+
+message GetTicketsResponse{
+    repeated string ticketIds=1;
+}
+
+service Phishstory{
+    rpc CreateTicket(CreateTicketRequest) returns(CreateTicketResponse){}
+    rpc UpdateTicket(UpdateTicketRequest) returns(UpdateTicketResponse){}
+    rpc GetTicket(GetTicketRequest) returns(GetTicketResponse){}
+    rpc GetTickets(GetTicketsRequest) returns(GetTicketsResponse){}
+}

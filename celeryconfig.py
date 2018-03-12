@@ -19,7 +19,7 @@ class CeleryConfig:
     CELERYD_HIJACK_ROOT_LOGGER = False
 
     CELERY_ROUTES = {
-        'run.process': {'queue': app_settings.api_queue}
+        'run.process': {'queue': app_settings.MIDDLEWARE_QUEUE}
     }
 
     def __init__(self):

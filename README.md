@@ -55,4 +55,12 @@ Optionally, you may provide the flags --with-coverage --cover-package=service/ t
 To-Do
 
 ## Rebuild gRPC Stub Files
-To-Do
+Install grpcio-tools via
+```
+pip install grpcio-tools
+```
+
+Then regenerate the stub files using the following command
+```
+python -m grpc_tools.protoc -I./pb/ --python_out=./service/grpc_stub --grpc_python_out=./service/grpc_stub ./pb/phishstory-service.proto 
+```

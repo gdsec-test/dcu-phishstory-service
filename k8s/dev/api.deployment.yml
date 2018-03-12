@@ -19,7 +19,7 @@ spec:
           name: "k8s-artifactory-creds"
       containers:
         -
-          name: "api"
+          name: "phishstory-service"
           imagePullPolicy: "Always"
           image: "artifactory.secureserver.net:10014/docker-dcu-local/phishstory-service:dev"
           livenessProbe:
@@ -34,11 +34,9 @@ spec:
             periodSeconds: 10
           env:
           - name: sysenv
-            value: DEV
+            value: dev
           - name: BUILD_DATE
             value: 'THIS_STRING_IS_REPLACED_DURING_BUILD'
-          - name: API_INSTANCE
-            value: SNOW
           - name: KEYFILE
             value: /keyfiles/key.txt
           - name: SNOW_PASS

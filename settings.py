@@ -6,8 +6,6 @@ from encryption_helper import PasswordDecrypter
 
 class AppConfig:
     SNOW_URL = None
-    api_queue = 'devdcumiddleware'
-    api_task = 'run.process'
 
     SNOW_USER = 'dcuapi'
 
@@ -26,7 +24,7 @@ class AppConfig:
 
 class ProductionAppConfig(AppConfig):
     SNOW_URL = 'https://godaddy.service-now.com/api/now/table'
-    api_queue = 'dcumiddleware'
+    MIDDLEWARE_QUEUE = 'dcumiddleware'
 
     DB = 'phishstory'
     DB_HOST = '10.22.9.209'
@@ -35,7 +33,7 @@ class ProductionAppConfig(AppConfig):
 
 class OTEAppConfig(AppConfig):
     SNOW_URL = 'https://godaddytest.service-now.com/api/now/table'
-    api_queue = 'otedcumiddleware'
+    MIDDLEWARE_QUEUE = 'otedcumiddleware'
 
     DB = 'otephishstory'
     DB_HOST = '10.22.9.209'
@@ -44,6 +42,7 @@ class OTEAppConfig(AppConfig):
 
 class DevelopmentAppConfig(AppConfig):
     SNOW_URL = 'https://godaddydev.service-now.com/api/now/table'
+    MIDDLEWARE_QUEUE = 'devdcumiddleware'
 
     DB = 'devphishstory'
     DB_HOST = '10.22.188.208'
@@ -56,7 +55,7 @@ class TestAppConfig(AppConfig):
     DBURL = 'mongodb://devuser:phishstory@10.22.188.208/devphishstory'
     DB = 'devphishstory'
 
-
-class PersonalAppConfig(AppConfig):
-    SNOW_URL = 'https://godaddydev.service-now.com/api/now/table'
-
+config_by_name = {'dev': DevelopmentAppConfig,
+                  'ote': OTEAppConfig,
+                  'prod': ProductionAppConfig,
+                  'test': TestAppConfig}

@@ -1,19 +1,15 @@
+import logging
 import json
 import urllib
 
-from celery import Celery
 from dcdatabase.phishstorymongo import PhishstoryMongo
 from flask import Response
 from flask import make_response
 
-from celeryconfig import CeleryConfig
-
 from service.api.interface import DataStore
-from service.classlogger import class_logger
-from service.connectors.snow import SnowAccess
+from service.connectors.snow import SNOWHelper
 
 
-@class_logger
 class ServiceNowDataStore(DataStore):
     HTML2SNOW = {
         'limit': 'sysparm_limit',
@@ -36,11 +32,12 @@ class ServiceNowDataStore(DataStore):
     TICKET_TABLE_NAME = 'u_dcu_ticket'
     DEFAULT_ERROR_CODE = 422
 
-    def __init__(self, app_settings):
-        self._datastore = SnowAccess(app_settings)
-        self._db = PhishstoryMongo(app_settings)
+    def __init__(self, app_settings, celery):
+        self._logger = logging.getLogger(__name__)
 
-        self._capp = Celery().config_from_object(CeleryConfig(app_settings.api_task, app_settings.api_queue))
+        self._datastore = SNOWHelper(app_settings)
+        self._db = PhishstoryMongo(app_settings)
+        self._celery = celery
 
     def clean_for_middleware(self, json_string):
         middleware_keys = ['ticketId',
@@ -62,12 +59,11 @@ class ServiceNowDataStore(DataStore):
 
         # Check to see if there is an existing open ticket with same source url
         url_args = self._create_url_params_string({'closed': 'false', 'source': urllib.quote_plus(source)})
-
         query = '/{table_name}{url_args}'.format(table_name=self.TICKET_TABLE_NAME, url_args=url_args)
+
         response = self._datastore.get_request(query)
 
         query_dict = json.loads(response.content)
-
         if 'result' not in query_dict:
             self._logger.error("A database error occurred when querying for {}".format(source))
 
@@ -134,7 +130,7 @@ class ServiceNowDataStore(DataStore):
                         self._db.add_new_incident(args['ticketId'], json_for_middleware)
 
                         self._logger.info("Payload sent to middleware: {}".format(json_for_middleware))
-                        self._capp.send_task(self.credentials.api_task, (json_for_middleware,))
+                        self._celery.send_task('run.process', (json_for_middleware,))
             return api_resp
         except Exception as e:
             api_resp = make_response('{{"message":"EXCEPTION: %s"}}' % e.message)

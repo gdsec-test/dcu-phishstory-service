@@ -1,7 +1,7 @@
 from requests import sessions
 
 
-class SnowAccess(object):
+class SNOWHelper(object):
     get_headers = {'Accept': 'application/json'}
     post_headers = dict(list(get_headers.items()) + list({'Content-Type': 'application/json'}.items()))
 

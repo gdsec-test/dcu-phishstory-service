@@ -22,23 +22,23 @@ spec:
           name: "api"
           imagePullPolicy: "Always"
           image: "artifactory.secureserver.net:10014/docker-dcu-local/phishstory-service:dev"
-#          livenessProbe:
-#            httpGet:
-#              path: /v1/abuse/tickets/health
-#              port: 5000
-#            initialDelaySeconds: 10
-#            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 9000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            tcpSocket:
+              port: 9000
+            initialDelaySeconds: 5
+            periodSeconds: 10
           env:
+          - name: sysenv
+            value: DEV
           - name: BUILD_DATE
             value: 'THIS_STRING_IS_REPLACED_DURING_BUILD'
-#          - name: HTTP_ONLY
-#            value: 'true'
-#          - name: REDIS_HOST
-#            value: redis.abuse-api-dev.svc.cluster.local
           - name: API_INSTANCE
             value: SNOW
-          - name: API_MODE
-            value: DEV
           - name: KEYFILE
             value: /keyfiles/key.txt
           - name: SNOW_PASS

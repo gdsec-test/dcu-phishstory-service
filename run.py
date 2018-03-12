@@ -10,7 +10,7 @@ from concurrent import futures
 import service.grpc_stub.phishstory_pb2
 import service.grpc_stub.phishstory_pb2_grpc
 from celeryconfig import CeleryConfig
-from service.api.servicenow_impl import SNOW
+from service.api.snow_api import SNOWAPI
 from service.grpc_stub.phishstory_pb2 import CreateTicketResponse, \
     UpdateTicketResponse, \
     GetTicketsResponse, \
@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 class API(PhishstoryServicer):
     def __init__(self):
-        self._api = SNOW(app_settings, capp)
+        self._api = SNOWAPI(app_settings, capp)
 
     def CreateTicket(self, request, context):
         logger.info("Received CreateTicket Request: {}".format(request))

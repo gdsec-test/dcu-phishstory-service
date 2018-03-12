@@ -10,7 +10,7 @@ from service.api.interface import DataStore
 from service.connectors.snow import SNOWHelper
 
 
-class SNOW(DataStore):
+class SNOWAPI(DataStore):
 
     HTML2SNOW = {
         'limit': 'sysparm_limit',

@@ -65,14 +65,13 @@ class API(PhishstoryServicer):
     def GetTickets(self, request, context):
         logger.info("Received GetTickets Request: {}".format(request))
 
-        # TO-DO this may need to change
         data = {'type': request.type, 'source': request.source, 'sourceDomainOrIp': request.sourceDomainOrIp,
                 'target': request.target, 'isTicketClosed': request.isTicketClosed, 'created': request.created,
                 'closed': request.closed, 'proxy': request.proxy, 'intentional': request.intentional,
                 'reporter': request.reporter, 'info': request.info, 'infoUrl': request.infoUrl}
 
         res = self._api.get_tickets(data)
-        return GetTicketsResponse(res)
+        return GetTicketsResponse(ticketIds=res)
 
     def UpdateTicket(self, request, context):
         logger.info("Received UpdateTicket Request: {}".format(request))

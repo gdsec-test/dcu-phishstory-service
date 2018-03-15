@@ -60,6 +60,11 @@ class SNOWAPI(DataStore):
         self._celery = celery
 
     def check_duplicate(self, source):
+        """
+        Determines whether or not a ticket is currently "Open" matching the provided source
+        :param source:
+        :return:
+        """
         if not source:
             self._logger.error("Invalid source URL provided. Failed to check for duplicate ticket")
             return None
@@ -78,13 +83,12 @@ class SNOWAPI(DataStore):
 
     def create_ticket(self, args):
         """
-        Test for IP and make sure goes to domain (change name) in ticket table
-        Method to extract domain from source url, post domain to ticket table and
-        get back ticket number and ticket sys id
-
-        :param args: a dictionary containing all the values needed to get an attachment from a ticket
-        :return: a response object containing string of the unique ticket id
+        Creates a ticket for the provided abuse report in SNOW and MongoDB. Passes along filtered arguments to
+        the middleware queue for further processing and enrichment.
+        :param args:
+        :return:
         """
+
         # Check to see if the abuse report has been previously submitted for this source
         is_duplicate = self.check_duplicate(args.get('source'))
         if is_duplicate or is_duplicate is None:
@@ -92,7 +96,6 @@ class SNOWAPI(DataStore):
 
         try:
             response = self._datastore.post_request('/{}'.format(self.TICKET_TABLE_NAME), self._create_json_string(args))
-
             snow_data = json.loads(response.content)
         except Exception as e:
             self._logger.error("Error while creating ticket for source {} {}".format(args.get('source'), e.message))
@@ -102,23 +105,31 @@ class SNOWAPI(DataStore):
         if response.status_code == 201:
 
             if args.get('type') in ['PHISHING', 'MALWARE', 'SPAM', 'NETWORK_ABUSE']:
-                converted = self._convert_snow_to_mongo(snow_data.get('result'))
-                json_for_middleware = {key: converted[key] for key in self.MIDDLEWARE_KEYS}
+                args['ticketId'] = snow_data['result']['u_number']
+                json_for_middleware = {key: args[key] for key in self.MIDDLEWARE_KEYS}
 
                 if args.get('metadata'):
                     json_for_middleware['metadata'] = args.get('metadata')
 
                 self._db.add_new_incident(json_for_middleware.get('ticketId'), json_for_middleware)
+                self.send_to_middleware(json_for_middleware)
 
-                self._logger.info("Payload sent to middleware: {}".format(json_for_middleware))
-                self._celery.send_task('run.process', (json_for_middleware,))
                 return json_for_middleware.get('ticketId')
         return None
 
+    def send_to_middleware(self, data):
+        try:
+            self._logger.info("Attempting to send payload to Middleware: {}".format(data))
+            self._celery.send_task('run.process', (data,))
+        except Exception as e:
+            self._logger.error("Error sending payload to Middleware {} {}".format(data, e.message))
+
+
     def update_ticket(self, args):
         """
-        :param args: a dictionary containing all the values needed to get an attachment from a ticket
-        :return: a response object containing a string either stating success of the reason for failure
+        Update the SNOW ticket with provided args, and close the ticket if closed and close_reason is provided.
+        :param args:
+        :return:
         """
         if args.get('closed') and not args.get('close_reason'):
             self._logger.error("Unable to close ticket, close_reason not provided {}".format(args.get('ticketId')))
@@ -149,21 +160,9 @@ class SNOWAPI(DataStore):
 
     def get_tickets(self, args):
         """
-        :param args: a dictionary containing all the values needed to get an attachment from a ticket
-            Valid keys include (by table):
-                    Ticket:
-                                limit: max number of tickets to return
-                                offset: return tickets starting after given index
-                                domain: suspected domain
-                                start_date: tickets created on or after date
-                                end_date: tickets created on or before date
-                                status: ticket status
-                                type: abuse ticket type
-                                ip: source ip
-                                target: victim or attack target
-                    Reporter:
-                                reporter: reporter email
-        :return: a response object containing a list of unique ticket ids
+        Finds all tickets that match Q parameters provided in args and returns the resulting ticketIds
+        :param args:
+        :return:
         """
 
         # Add entries to args dictionary for pagination
@@ -189,9 +188,9 @@ class SNOWAPI(DataStore):
 
     def get_ticket_info(self, args):
         """
-        :param args: a dictionary containing all the values needed to get an attachment from a ticket
-        :return: a response object containing a dictionary of all values we want to return to a user,
-            from a single ticket
+        Retrieves all SNOW information for a provided ticketId
+        :param args:
+        :return:
         """
         try:
             query = '/{table_name}?sysparam_limit=1&u_number={ticketId}'.format(
@@ -204,23 +203,32 @@ class SNOWAPI(DataStore):
             self._logger.error("Error retrieving ticket info for {} {}".format(args.get('ticketId'), e.message))
             return None
 
-        ticket_data = None
+        ticket_data = {}
 
         if response.status_code == 200:
             self._logger.info("Retrieved info for ticket {}: {}".format(args.get('ticketId'), snow_data))
             if snow_data.get('result'):
                 ticket_data = snow_data['result'][0]
-        return ticket_data
+
+        # To-Do Find a simpler way of converting 'u_closed' to the proper boolean value
+        converted = {}
+        for k, v in ticket_data.iteritems():
+            if k in self.EXTERNAL_DATA:
+                if k == 'u_closed':
+                    v = bool(v)
+                converted[self.EXTERNAL_DATA[k]] = v
+        return converted
 
 
     def _create_url_params_string(self, params):
         """
-        :param params: A dictionary containing values to convert into URL params
-        :return: A URL parameters string
 
         Used to create a GET style URL parameter string for SNOW API calls.
         Need a special case for GET TICKETS createdStart and createdEnd, so that
         they employ >= or <= instead of just =
+
+        :param params: A dictionary containing values to convert into URL params
+        :return: A URL parameters string
         """
         if not params:
             return ''
@@ -259,12 +267,22 @@ class SNOWAPI(DataStore):
         return json.dumps(params_list)
 
     def _convert_snow_to_mongo(self, data):
+        """
+        Converts data returned in SNOW format to one digestible by MongoDB
+        :param data:
+        :return:
+        """
         ext_data = {}
         for key, swagKey in self.EXTERNAL_DATA.iteritems():
             ext_data[swagKey] = data[key] if key in data else None
         return ext_data
 
     def _get_sys_id(self, ticketId):
+        """
+        Given a ticketId, attempt to retrieve the associated sys_id to retrieve all related information.
+        :param ticketId:
+        :return:
+        """
         self._logger.info("Attempting to retrieve SysId for {}".format(ticketId))
 
         try:

@@ -2,8 +2,8 @@ import logging.config
 import os
 import time
 
-import yaml
 import grpc
+import yaml
 from celery import Celery
 from concurrent import futures
 
@@ -11,6 +11,7 @@ import service.grpc_stub.phishstory_pb2
 import service.grpc_stub.phishstory_pb2_grpc
 from celeryconfig import CeleryConfig
 from service.api.snow_api import SNOWAPI
+from service.grpc_stub.convertor import protobuf_to_dict, dict_to_protobuf
 from service.grpc_stub.phishstory_pb2 import CreateTicketResponse, \
     UpdateTicketResponse, \
     GetTicketsResponse, \
@@ -45,43 +46,74 @@ class API(PhishstoryServicer):
         self._api = SNOWAPI(app_settings, capp)
 
     def CreateTicket(self, request, context):
-        logger.info("Received CreateTicket Request: {}".format(request))
+        logger.info("Received CreateTicket Request {}".format(request))
 
-        # TO-DO this may need to change
-        data = {'type': request.type, 'source': request.source, 'target': request.target,
-                'proxy': request.proxy, 'intentional': request.intentional,
-                'reporter': request.reporter, 'info': request.info, 'infoUrl': request.infoUrl}
+        data = protobuf_to_dict(request, including_default_value_fields=True)
+        ticketId = self._api.create_ticket(data)
 
-        res = self._api.create_ticket(data)
-        return CreateTicketResponse(res.get('ticketId'))
+        if not ticketId:
+            message = "Unable to complete CreateTicket Request {}".format(request)
+            logger.error(message)
+            self.generate_error(context, grpc.StatusCode.INTERNAL, message)
+            return CreateTicketResponse()
+
+        return CreateTicketResponse(ticketId=ticketId)
 
     def GetTicket(self, request, context):
-        logger.info("Received GetTicket Request: {}".format(request))
+        logger.info("Received GetTicket Request {}".format(request))
 
-        # TO-DO this may need to change
-        res = self._api.get_ticket_info({'ticketId': request.ticketId})
-        return GetTicketResponse(ticketId=res.get('ticketId'))
+        data = {'ticketId': request.ticketId}
+        ticketInfo = self._api.get_ticket_info(data)
+
+        if not ticketInfo:
+            message = "Unable to complete GetTicket Request {}".format(request)
+            logger.error(message)
+            self.generate_error(context, grpc.StatusCode.INTERNAL, message)
+            return GetTicketResponse()
+
+        return dict_to_protobuf(GetTicketResponse, ticketInfo, strict=False)
 
     def GetTickets(self, request, context):
-        logger.info("Received GetTickets Request: {}".format(request))
+        logger.info("Received GetTickets Request {}".format(request))
 
-        data = {'type': request.type, 'source': request.source, 'sourceDomainOrIp': request.sourceDomainOrIp,
-                'target': request.target, 'isTicketClosed': request.isTicketClosed, 'created': request.created,
-                'closed': request.closed, 'proxy': request.proxy, 'intentional': request.intentional,
-                'reporter': request.reporter, 'info': request.info, 'infoUrl': request.infoUrl}
+        data = protobuf_to_dict(request)
 
-        res = self._api.get_tickets(data)
-        return GetTicketsResponse(ticketIds=res)
+        ''' Protobuf3 does not delineate between default values and values that are set but equal to default values.
+        In this case any booleans such as 'closed' or 'intentional' will always be False unless set to True. 
+        Since the behavior provided by always included these booleans in queries is relatively benign, we include them
+        regardless whether or not their values are True or False.
+        
+        See https://developers.google.com/protocol-buffers/docs/proto3 for more information regarding Protobuf defaults
+        '''
+        data['closed'] = request.closed
+        data['intentional'] = request.intentional
+        data['limit'] = request.limit or 100
+
+        ticketIds = self._api.get_tickets(data)
+
+        if not ticketIds:
+            message = "Unable to complete GetTickets Request {}".format(request)
+            logger.error(message)
+            self.generate_error(context, grpc.StatusCode.INTERNAL, message)
+            return GetTicketsResponse()
+
+        return GetTicketsResponse(ticketIds=ticketIds)
 
     def UpdateTicket(self, request, context):
-        logger.info("Received UpdateTicket Request: {}".format(request))
+        logger.info("Received UpdateTicket Request {}".format(request))
 
-        # TO-DO this may need to change
-        data = {'ticketId': request.ticketId, 'type': request.type, 'isTicketClosed': request.isTicketClosed,
-                'target': request.target}
+        data = protobuf_to_dict(request)
+        ticketInfo = self._api.update_ticket(data)
 
-        res = self._api.update_ticket(data)
-        return UpdateTicketResponse(res)
+        if not ticketInfo:
+            message = "Unable to complete UpdateTicket Request {}".format(request)
+            logger.error(message)
+            self.generate_error(context, grpc.StatusCode.INTERNAL, message)
+        return UpdateTicketResponse()
+
+    def generate_error(self, context, error_code, details):
+        context.set_code(error_code)
+        context.set_details(details)
 
 
 def serve():

@@ -27,7 +27,7 @@ loggers:
         level: INFO
         handlers: [console]
         propagate: no
-# The logger for the root level directory, which is 'newman'
+
 root:
     level: INFO
     handlers: [console]

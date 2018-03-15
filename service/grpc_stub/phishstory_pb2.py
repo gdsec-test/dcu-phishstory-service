@@ -13,18 +13,61 @@ from google.protobuf import descriptor_pb2
 _sym_db = _symbol_database.Default()
 
 
-from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='phishstory.proto',
   package='phishstoryservice',
   syntax='proto3',
-  serialized_pb=_b('\n\x10phishstory.proto\x12\x11phishstoryservice\x1a\x1fgoogle/protobuf/timestamp.proto\"\x98\x01\n\x13\x43reateTicketRequest\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x0e\n\x06target\x18\x03 \x01(\t\x12\r\n\x05proxy\x18\x04 \x01(\t\x12\x13\n\x0bintentional\x18\x05 \x01(\x08\x12\x10\n\x08reporter\x18\x06 \x01(\t\x12\x0c\n\x04info\x18\x07 \x01(\t\x12\x0f\n\x07infoUrl\x18\x08 \x01(\t\"(\n\x14\x43reateTicketResponse\x12\x10\n\x08ticketId\x18\x01 \x01(\t\"$\n\x10GetTicketRequest\x12\x10\n\x08ticketId\x18\x01 \x01(\t\"\xfb\x01\n\x11GetTicketResponse\x12\x10\n\x08ticketId\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\t\x12\x0c\n\x04type\x18\x03 \x01(\t\x12\x0e\n\x06source\x18\x04 \x01(\t\x12\x18\n\x10sourceDomainOrIp\x18\x05 \x01(\t\x12\x10\n\x08reporter\x18\x06 \x01(\t\x12\x0e\n\x06target\x18\x07 \x01(\t\x12\x16\n\x0eisTicketClosed\x18\x08 \x01(\x08\x12\x0f\n\x07\x63reated\x18\t \x01(\t\x12\x13\n\x0bintentional\x18\n \x01(\x08\x12\x0c\n\x04info\x18\x0b \x01(\t\x12\x0f\n\x07infoUrl\x18\x0c \x01(\t\x12\r\n\x05proxy\x18\r \x01(\t\"]\n\x13UpdateTicketRequest\x12\x10\n\x08ticketId\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\x16\n\x0eisTicketClosed\x18\x03 \x01(\x08\x12\x0e\n\x06target\x18\x04 \x01(\t\"\xa0\x01\n\x14UpdateTicketResponse\x12\x10\n\x08ticketId\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\x16\n\x0eisTicketClosed\x18\x03 \x01(\x08\x12\x0e\n\x06target\x18\x04 \x01(\t\x12*\n\x06\x63losed\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x14\n\x0c\x63lose_reason\x18\x06 \x01(\t\"\x93\x02\n\x11GetTicketsRequest\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x16\n\x0eisTicketClosed\x18\x02 \x01(\x08\x12\x0e\n\x06source\x18\x03 \x01(\t\x12\x18\n\x10sourceDomainOrIp\x18\x04 \x01(\t\x12\x0e\n\x06target\x18\x05 \x01(\t\x12+\n\x07\x63reated\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12*\n\x06\x63losed\x18\x07 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x13\n\x0bintentional\x18\x08 \x01(\x08\x12\x10\n\x08reporter\x18\t \x01(\t\x12\x0f\n\x07infoUrl\x18\n \x01(\t\x12\r\n\x05proxy\x18\x0b \x01(\t\"\'\n\x12GetTicketsResponse\x12\x11\n\tticketIds\x18\x01 \x03(\t2\x89\x03\n\nPhishstory\x12\x61\n\x0c\x43reateTicket\x12&.phishstoryservice.CreateTicketRequest\x1a\'.phishstoryservice.CreateTicketResponse\"\x00\x12\x61\n\x0cUpdateTicket\x12&.phishstoryservice.UpdateTicketRequest\x1a\'.phishstoryservice.UpdateTicketResponse\"\x00\x12X\n\tGetTicket\x12#.phishstoryservice.GetTicketRequest\x1a$.phishstoryservice.GetTicketResponse\"\x00\x12[\n\nGetTickets\x12$.phishstoryservice.GetTicketsRequest\x1a%.phishstoryservice.GetTicketsResponse\"\x00\x62\x06proto3')
-  ,
-  dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
+  serialized_pb=_b('\n\x10phishstory.proto\x12\x11phishstoryservice\"N\n\x0eTicketMetadata\x12\x0f\n\x07iris_id\x18\x01 \x01(\x05\x12\x15\n\riris_reporter\x18\x02 \x01(\t\x12\x14\n\x0ciris_created\x18\x03 \x01(\t\"\x80\x02\n\x13\x43reateTicketRequest\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x18\n\x10sourceDomainOrIp\x18\x03 \x01(\t\x12\x17\n\x0fsourceSubDomain\x18\x04 \x01(\t\x12\x0e\n\x06target\x18\x05 \x01(\t\x12\r\n\x05proxy\x18\x06 \x01(\t\x12\x13\n\x0bintentional\x18\x07 \x01(\x08\x12\x10\n\x08reporter\x18\x08 \x01(\t\x12\x0c\n\x04info\x18\t \x01(\t\x12\x0f\n\x07infoUrl\x18\n \x01(\t\x12\x33\n\x08metadata\x18\x0b \x01(\x0b\x32!.phishstoryservice.TicketMetadata\"(\n\x14\x43reateTicketResponse\x12\x10\n\x08ticketId\x18\x01 \x01(\t\"$\n\x10GetTicketRequest\x12\x10\n\x08ticketId\x18\x01 \x01(\t\"\xcd\x01\n\x11GetTicketResponse\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x10\n\x08ticketId\x18\x03 \x01(\t\x12\x10\n\x08reporter\x18\x04 \x01(\t\x12\x17\n\x0fsourceSubDomain\x18\x05 \x01(\t\x12\x18\n\x10sourceDomainOrIp\x18\x06 \x01(\t\x12\x0e\n\x06target\x18\x07 \x01(\t\x12\x0e\n\x06source\x18\x08 \x01(\t\x12\x11\n\tcreatedAt\x18\t \x01(\t\x12\x10\n\x08\x63losedAt\x18\n \x01(\t\"M\n\x13UpdateTicketRequest\x12\x10\n\x08ticketId\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x14\n\x0c\x63lose_reason\x18\x03 \x01(\t\"\x16\n\x14UpdateTicketResponse\"\xb6\x01\n\x11GetTicketsRequest\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x18\n\x10sourceDomainOrIp\x18\x03 \x01(\t\x12\x0e\n\x06target\x18\x04 \x01(\t\x12\x14\n\x0c\x63reatedStart\x18\x05 \x01(\t\x12\x12\n\ncreatedEnd\x18\x06 \x01(\t\x12\r\n\x05limit\x18\x07 \x01(\x05\x12\x0e\n\x06offset\x18\x08 \x01(\x05\x12\x10\n\x08reporter\x18\t \x01(\t\"\'\n\x12GetTicketsResponse\x12\x11\n\tticketIds\x18\x01 \x03(\t2\x89\x03\n\nPhishstory\x12\x61\n\x0c\x43reateTicket\x12&.phishstoryservice.CreateTicketRequest\x1a\'.phishstoryservice.CreateTicketResponse\"\x00\x12\x61\n\x0cUpdateTicket\x12&.phishstoryservice.UpdateTicketRequest\x1a\'.phishstoryservice.UpdateTicketResponse\"\x00\x12X\n\tGetTicket\x12#.phishstoryservice.GetTicketRequest\x1a$.phishstoryservice.GetTicketResponse\"\x00\x12[\n\nGetTickets\x12$.phishstoryservice.GetTicketsRequest\x1a%.phishstoryservice.GetTicketsResponse\"\x00\x62\x06proto3')
+)
 
 
+
+
+_TICKETMETADATA = _descriptor.Descriptor(
+  name='TicketMetadata',
+  full_name='phishstoryservice.TicketMetadata',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='iris_id', full_name='phishstoryservice.TicketMetadata.iris_id', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='iris_reporter', full_name='phishstoryservice.TicketMetadata.iris_reporter', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='iris_created', full_name='phishstoryservice.TicketMetadata.iris_created', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=39,
+  serialized_end=117,
+)
 
 
 _CREATETICKETREQUEST = _descriptor.Descriptor(
@@ -49,44 +92,65 @@ _CREATETICKETREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='target', full_name='phishstoryservice.CreateTicketRequest.target', index=2,
+      name='sourceDomainOrIp', full_name='phishstoryservice.CreateTicketRequest.sourceDomainOrIp', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='proxy', full_name='phishstoryservice.CreateTicketRequest.proxy', index=3,
+      name='sourceSubDomain', full_name='phishstoryservice.CreateTicketRequest.sourceSubDomain', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='intentional', full_name='phishstoryservice.CreateTicketRequest.intentional', index=4,
-      number=5, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='target', full_name='phishstoryservice.CreateTicketRequest.target', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='reporter', full_name='phishstoryservice.CreateTicketRequest.reporter', index=5,
+      name='proxy', full_name='phishstoryservice.CreateTicketRequest.proxy', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='info', full_name='phishstoryservice.CreateTicketRequest.info', index=6,
-      number=7, type=9, cpp_type=9, label=1,
+      name='intentional', full_name='phishstoryservice.CreateTicketRequest.intentional', index=6,
+      number=7, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='reporter', full_name='phishstoryservice.CreateTicketRequest.reporter', index=7,
+      number=8, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='infoUrl', full_name='phishstoryservice.CreateTicketRequest.infoUrl', index=7,
-      number=8, type=9, cpp_type=9, label=1,
+      name='info', full_name='phishstoryservice.CreateTicketRequest.info', index=8,
+      number=9, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='infoUrl', full_name='phishstoryservice.CreateTicketRequest.infoUrl', index=9,
+      number=10, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='metadata', full_name='phishstoryservice.CreateTicketRequest.metadata', index=10,
+      number=11, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
@@ -102,8 +166,8 @@ _CREATETICKETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=73,
-  serialized_end=225,
+  serialized_start=120,
+  serialized_end=376,
 )
 
 
@@ -133,8 +197,8 @@ _CREATETICKETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=227,
-  serialized_end=267,
+  serialized_start=378,
+  serialized_end=418,
 )
 
 
@@ -164,8 +228,8 @@ _GETTICKETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=269,
-  serialized_end=305,
+  serialized_start=420,
+  serialized_end=456,
 )
 
 
@@ -177,7 +241,7 @@ _GETTICKETRESPONSE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='ticketId', full_name='phishstoryservice.GetTicketResponse.ticketId', index=0,
+      name='type', full_name='phishstoryservice.GetTicketResponse.type', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -185,34 +249,34 @@ _GETTICKETRESPONSE = _descriptor.Descriptor(
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='closed', full_name='phishstoryservice.GetTicketResponse.closed', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='type', full_name='phishstoryservice.GetTicketResponse.type', index=2,
+      name='ticketId', full_name='phishstoryservice.GetTicketResponse.ticketId', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='source', full_name='phishstoryservice.GetTicketResponse.source', index=3,
+      name='reporter', full_name='phishstoryservice.GetTicketResponse.reporter', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='sourceDomainOrIp', full_name='phishstoryservice.GetTicketResponse.sourceDomainOrIp', index=4,
+      name='sourceSubDomain', full_name='phishstoryservice.GetTicketResponse.sourceSubDomain', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='reporter', full_name='phishstoryservice.GetTicketResponse.reporter', index=5,
+      name='sourceDomainOrIp', full_name='phishstoryservice.GetTicketResponse.sourceDomainOrIp', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -226,43 +290,22 @@ _GETTICKETRESPONSE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='isTicketClosed', full_name='phishstoryservice.GetTicketResponse.isTicketClosed', index=7,
-      number=8, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='source', full_name='phishstoryservice.GetTicketResponse.source', index=7,
+      number=8, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='created', full_name='phishstoryservice.GetTicketResponse.created', index=8,
+      name='createdAt', full_name='phishstoryservice.GetTicketResponse.createdAt', index=8,
       number=9, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='intentional', full_name='phishstoryservice.GetTicketResponse.intentional', index=9,
-      number=10, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='info', full_name='phishstoryservice.GetTicketResponse.info', index=10,
-      number=11, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='infoUrl', full_name='phishstoryservice.GetTicketResponse.infoUrl', index=11,
-      number=12, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='proxy', full_name='phishstoryservice.GetTicketResponse.proxy', index=12,
-      number=13, type=9, cpp_type=9, label=1,
+      name='closedAt', full_name='phishstoryservice.GetTicketResponse.closedAt', index=9,
+      number=10, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -279,8 +322,8 @@ _GETTICKETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=308,
-  serialized_end=559,
+  serialized_start=459,
+  serialized_end=664,
 )
 
 
@@ -299,22 +342,15 @@ _UPDATETICKETREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='type', full_name='phishstoryservice.UpdateTicketRequest.type', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='isTicketClosed', full_name='phishstoryservice.UpdateTicketRequest.isTicketClosed', index=2,
-      number=3, type=8, cpp_type=7, label=1,
+      name='closed', full_name='phishstoryservice.UpdateTicketRequest.closed', index=1,
+      number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='target', full_name='phishstoryservice.UpdateTicketRequest.target', index=3,
-      number=4, type=9, cpp_type=9, label=1,
+      name='close_reason', full_name='phishstoryservice.UpdateTicketRequest.close_reason', index=2,
+      number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -331,8 +367,8 @@ _UPDATETICKETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=561,
-  serialized_end=654,
+  serialized_start=666,
+  serialized_end=743,
 )
 
 
@@ -343,48 +379,6 @@ _UPDATETICKETRESPONSE = _descriptor.Descriptor(
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
-    _descriptor.FieldDescriptor(
-      name='ticketId', full_name='phishstoryservice.UpdateTicketResponse.ticketId', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='type', full_name='phishstoryservice.UpdateTicketResponse.type', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='isTicketClosed', full_name='phishstoryservice.UpdateTicketResponse.isTicketClosed', index=2,
-      number=3, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='target', full_name='phishstoryservice.UpdateTicketResponse.target', index=3,
-      number=4, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='closed', full_name='phishstoryservice.UpdateTicketResponse.closed', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='close_reason', full_name='phishstoryservice.UpdateTicketResponse.close_reason', index=5,
-      number=6, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -397,8 +391,8 @@ _UPDATETICKETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=657,
-  serialized_end=817,
+  serialized_start=745,
+  serialized_end=767,
 )
 
 
@@ -417,71 +411,57 @@ _GETTICKETSREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='isTicketClosed', full_name='phishstoryservice.GetTicketsRequest.isTicketClosed', index=1,
+      name='closed', full_name='phishstoryservice.GetTicketsRequest.closed', index=1,
       number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='source', full_name='phishstoryservice.GetTicketsRequest.source', index=2,
+      name='sourceDomainOrIp', full_name='phishstoryservice.GetTicketsRequest.sourceDomainOrIp', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='sourceDomainOrIp', full_name='phishstoryservice.GetTicketsRequest.sourceDomainOrIp', index=3,
+      name='target', full_name='phishstoryservice.GetTicketsRequest.target', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='target', full_name='phishstoryservice.GetTicketsRequest.target', index=4,
+      name='createdStart', full_name='phishstoryservice.GetTicketsRequest.createdStart', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='created', full_name='phishstoryservice.GetTicketsRequest.created', index=5,
-      number=6, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='createdEnd', full_name='phishstoryservice.GetTicketsRequest.createdEnd', index=5,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='closed', full_name='phishstoryservice.GetTicketsRequest.closed', index=6,
-      number=7, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='limit', full_name='phishstoryservice.GetTicketsRequest.limit', index=6,
+      number=7, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='intentional', full_name='phishstoryservice.GetTicketsRequest.intentional', index=7,
-      number=8, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='offset', full_name='phishstoryservice.GetTicketsRequest.offset', index=7,
+      number=8, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='reporter', full_name='phishstoryservice.GetTicketsRequest.reporter', index=8,
       number=9, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='infoUrl', full_name='phishstoryservice.GetTicketsRequest.infoUrl', index=9,
-      number=10, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='proxy', full_name='phishstoryservice.GetTicketsRequest.proxy', index=10,
-      number=11, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -498,8 +478,8 @@ _GETTICKETSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=820,
-  serialized_end=1095,
+  serialized_start=770,
+  serialized_end=952,
 )
 
 
@@ -529,13 +509,12 @@ _GETTICKETSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1097,
-  serialized_end=1136,
+  serialized_start=954,
+  serialized_end=993,
 )
 
-_UPDATETICKETRESPONSE.fields_by_name['closed'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
-_GETTICKETSREQUEST.fields_by_name['created'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
-_GETTICKETSREQUEST.fields_by_name['closed'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_CREATETICKETREQUEST.fields_by_name['metadata'].message_type = _TICKETMETADATA
+DESCRIPTOR.message_types_by_name['TicketMetadata'] = _TICKETMETADATA
 DESCRIPTOR.message_types_by_name['CreateTicketRequest'] = _CREATETICKETREQUEST
 DESCRIPTOR.message_types_by_name['CreateTicketResponse'] = _CREATETICKETRESPONSE
 DESCRIPTOR.message_types_by_name['GetTicketRequest'] = _GETTICKETREQUEST
@@ -545,6 +524,13 @@ DESCRIPTOR.message_types_by_name['UpdateTicketResponse'] = _UPDATETICKETRESPONSE
 DESCRIPTOR.message_types_by_name['GetTicketsRequest'] = _GETTICKETSREQUEST
 DESCRIPTOR.message_types_by_name['GetTicketsResponse'] = _GETTICKETSRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
+
+TicketMetadata = _reflection.GeneratedProtocolMessageType('TicketMetadata', (_message.Message,), dict(
+  DESCRIPTOR = _TICKETMETADATA,
+  __module__ = 'phishstory_pb2'
+  # @@protoc_insertion_point(class_scope:phishstoryservice.TicketMetadata)
+  ))
+_sym_db.RegisterMessage(TicketMetadata)
 
 CreateTicketRequest = _reflection.GeneratedProtocolMessageType('CreateTicketRequest', (_message.Message,), dict(
   DESCRIPTOR = _CREATETICKETREQUEST,
@@ -610,8 +596,8 @@ _PHISHSTORY = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=1139,
-  serialized_end=1532,
+  serialized_start=996,
+  serialized_end=1389,
   methods=[
   _descriptor.MethodDescriptor(
     name='CreateTicket',

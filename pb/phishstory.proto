@@ -2,17 +2,24 @@ syntax="proto3";
 
 package phishstoryservice;
 
-import "google/protobuf/timestamp.proto";
+message TicketMetadata {
+    int32  iris_id=1;
+    string iris_reporter=2;
+    string iris_created=3;
+}
 
 message CreateTicketRequest{
-    string type=1;
-    string source=2;
-    string target=3;
-    string proxy=4;
-    bool   intentional=5;
-    string reporter=6;
-    string info=7;
-    string infoUrl=8;
+    string         type=1;
+    string         source=2;
+    string         sourceDomainOrIp=3;
+    string         sourceSubDomain=4;
+    string         target=5;
+    string         proxy=6;
+    bool           intentional=7;
+    string         reporter=8;
+    string         info=9;
+    string         infoUrl=10;
+    TicketMetadata metadata=11;
 }
 
 message CreateTicketResponse{
@@ -24,49 +31,36 @@ message GetTicketRequest{
 }
 
 message GetTicketResponse{
-    string ticketId=1;
-    string closed=2;
-    string type=3;
-    string source=4;
-    string sourceDomainOrIp=5;
-    string reporter=6;
+    string type=1;
+    bool   closed=2;
+    string ticketId=3;
+    string reporter=4;
+    string sourceSubDomain=5;
+    string sourceDomainOrIp=6;
     string target=7;
-    bool isTicketClosed=8;
-    string created=9;
-    bool intentional=10;
-    string info=11;
-    string infoUrl=12;
-    string proxy=13;
+    string source=8;
+    string createdAt=9;
+    string closedAt=10;
 }
 
 message UpdateTicketRequest{
     string ticketId=1;
-    string type=2;
-    bool isTicketClosed=3;
-    string target=4;
+    bool   closed=2;
+    string close_reason=3;
 }
 
-message UpdateTicketResponse{
-    string ticketId=1;
-    string type=2;
-    bool isTicketClosed=3;
-    string target=4;
-    google.protobuf.Timestamp closed=5;
-    string close_reason=6;
-}
+message UpdateTicketResponse{}
 
 message GetTicketsRequest{
     string type=1;
-    bool isTicketClosed=2;
-    string source=3;
-    string sourceDomainOrIp=4;
-    string target=5;
-    google.protobuf.Timestamp created=6;
-    google.protobuf.Timestamp closed=7;
-    bool intentional=8;
+    bool   closed=2;
+    string sourceDomainOrIp=3;
+    string target=4;
+    string createdStart=5;
+    string createdEnd=6;
+    int32  limit=7;
+    int32  offset=8;
     string reporter=9;
-    string infoUrl=10;
-    string proxy=11;
 }
 
 message GetTicketsResponse{

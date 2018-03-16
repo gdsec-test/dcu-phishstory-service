@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
-'''
+"""
 Author https://github.com/kaporzhu/protobuf-to-dict
 Copied here to preserve versioning
-'''
+"""
 import six
 import datetime
 
@@ -20,6 +20,7 @@ def datetime_to_timestamp(dt):
     ts = Timestamp()
     ts.FromDatetime(dt)
     return ts
+
 
 def timestamp_to_datetime(ts):
     dt = ts.ToDatetime()
@@ -147,7 +148,7 @@ def dict_to_protobuf(pb_klass_or_instance, values, type_callable_map=REVERSE_TYP
     :param dict type_callable_map: a mapping of protobuf types to callables for setting
        values on the target instance.
     :param bool strict: complain if keys in the map are not fields on the message.
-    :param bool strict: ignore None-values of fields, treat them as empty field
+    :param bool ignore_none: ignore None-values of fields, treat them as empty field
     """
     if isinstance(pb_klass_or_instance, Message):
         instance = pb_klass_or_instance
@@ -240,7 +241,6 @@ def _string_to_enum(field, input_value):
     except KeyError:
         raise KeyError("`%s` is not a valid value for field `%s`" % (input_value, field.name))
     return input_value
-
 
 
 def get_field_names_and_options(pb):

@@ -153,7 +153,6 @@ class SNOWAPI(DataStore):
 
         return [ticket.get('u_number') for ticket in snow_data.get('result', [])]
 
-
     def get_ticket_info(self, args):
         """
         Retrieves all SNOW information for a provided ticketId
@@ -179,7 +178,7 @@ class SNOWAPI(DataStore):
         # Necessary evil for converting unary to bool for gRPC response
         ticket_data['u_closed'] = True if 'true' in ticket_data['u_closed'].lower() else False
 
-        return {v: ticket_data[k] for k,v in self.EXTERNAL_DATA.iteritems()}
+        return {v: ticket_data[k] for k, v in self.EXTERNAL_DATA.iteritems()}
 
     def _check_duplicate(self, source):
         """
@@ -203,20 +202,19 @@ class SNOWAPI(DataStore):
 
         return bool(snow_data.get('result'))
 
-
-    def _get_sys_id(self, ticketId):
+    def _get_sys_id(self, ticket_id):
         """
         Given a ticketId, attempt to retrieve the associated sys_id to retrieve all related information.
-        :param ticketId:
+        :param ticket_id:
         :return:
         """
         try:
-            query = '/{}?u_number={}'.format(self.TICKET_TABLE_NAME, ticketId)
+            query = '/{}?u_number={}'.format(self.TICKET_TABLE_NAME, ticket_id)
             response = self._datastore.get_request(query)
 
             snow_data = json.loads(response.content)
         except Exception as e:
-            self._logger.error("Unable to retrieve SysId for ticket {} {}".format(ticketId, e.message))
+            self._logger.error("Unable to retrieve SysId for ticket {} {}".format(ticket_id, e.message))
             return
 
         if response.status_code != 200:
@@ -228,7 +226,7 @@ class SNOWAPI(DataStore):
             return
 
         if not snow_data.get('result'):
-            self._logger.error("No records found for {}".format(ticketId))
+            self._logger.error("No records found for {}".format(ticket_id))
             return
 
         return snow_data['result'][0]['sys_id']

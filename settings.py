@@ -57,6 +57,7 @@ class DevelopmentAppConfig(AppConfig):
     def __init__(self):
         super(DevelopmentAppConfig, self).__init__()
 
+
 class TestAppConfig(AppConfig):
     SNOW_URL = 'https://godaddydev.service-now.com/api/now/table'
 

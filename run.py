@@ -40,7 +40,6 @@ logging.raiseExceptions = True
 logger = logging.getLogger(__name__)
 
 
-
 class API(PhishstoryServicer):
     def __init__(self):
         self._api = SNOWAPI(app_settings, capp)
@@ -50,25 +49,25 @@ class API(PhishstoryServicer):
 
         try:
             data = protobuf_to_dict(request, including_default_value_fields=True)
-            ticketId = self._api.create_ticket(data)
+            ticket_id = self._api.create_ticket(data)
         except Exception as e:
             context.message = e.message
             context.code = grpc.StatusCode.INTERNAL
             return CreateTicketResponse()
 
-        return CreateTicketResponse(ticketId=ticketId)
+        return CreateTicketResponse(ticketId=ticket_id)
 
     def GetTicket(self, request, context):
         logger.info("Received GetTicket Request {}".format(request))
 
         try:
-            ticketInfo = self._api.get_ticket_info({'ticketId': request.ticketId})
+            ticket_info = self._api.get_ticket_info({'ticketId': request.ticketId})
         except Exception as e:
             context.message = e.message
             context.code = grpc.StatusCode.INTERNAL
             return GetTicketResponse()
 
-        return dict_to_protobuf(GetTicketResponse, ticketInfo, strict=False)
+        return dict_to_protobuf(GetTicketResponse, ticket_info, strict=False)
 
     def GetTickets(self, request, context):
         logger.info("Received GetTickets Request {}".format(request))
@@ -88,13 +87,13 @@ class API(PhishstoryServicer):
             data['closed'] = request.closed
             data['limit'] = request.limit or 100
 
-            ticketIds = self._api.get_tickets(data)
+            ticket_ids = self._api.get_tickets(data)
         except Exception as e:
             context.message = e.message
             context.code = grpc.StatusCode.INTERNAL
             return GetTicketsResponse()
 
-        return GetTicketsResponse(ticketIds=ticketIds)
+        return GetTicketsResponse(ticketIds=ticket_ids)
 
     def UpdateTicket(self, request, context):
         logger.info("Received UpdateTicket Request {}".format(request))

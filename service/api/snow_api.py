@@ -116,8 +116,6 @@ class SNOWAPI(DataStore):
         if not sys_id:
             raise Exception("Unable to update ticket {} at this time".format(args.get('ticketId')))
 
-        self._logger.info("Updating ticket {}".format(args.get('ticketId')))
-
         try:
             payload = self._create_http_payload(args)
             query = '/{}/{}'.format(self.TICKET_TABLE_NAME, sys_id)

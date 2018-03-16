@@ -52,7 +52,12 @@ Optionally, you may provide the flags --with-coverage --cover-package=service/ t
 
 
 ## Running Locally
-To-Do
+In order to run Phishstory Service locally you must specify the following environment variables
+1. DB_PASS
+2. SNOW_PASS
+3. BROKER_PASS
+
+You may then run Phishstory Service via `python run.py`
 
 ## Rebuild gRPC Stub Files
 Install grpcio-tools via
@@ -62,40 +67,31 @@ pip install grpcio-tools
 
 Then regenerate the stub files using the following command
 ```
-python -m grpc_tools.protoc -I./pb/ --python_out=./service/grpc_stub --grpc_python_out=./service/grpc_stub ./pb/phishstory-service.proto 
+python -m grpc_tools.protoc -I./pb/ --python_out=./pb/ --grpc_python_out=./pb/ ./pb/phishstory.proto 
 ```
 
 
 ## Example Client Implementation
 ```
-import logging
-import grpc
-
-import service.grpc_stub.phishstory_pb2
-import service.grpc_stub.phishstory_pb2_grpc
-
-logger = logging.basicConfig()
-
 class PhishstoryServiceClient:
     def __init__(self, url):
-        self._logger = logging.getLogger(__name__)
         self._url = url
 
     def get_ticket(self, ticketId):
         channel = grpc.insecure_channel(self._url)
         ready_future = grpc.channel_ready_future(channel)
-        stub = service.grpc_stub.phishstory_pb2_grpc.PhishstoryStub(channel)
+        stub = pb.phishstory_pb2_grpc.PhishstoryStub(channel)
 
         resp = None
         try:
             ready_future.result(timeout=5)
         except grpc.FutureTimeoutError:
-            self._logger.error("Unable to connect to: {}".format(self._url))
+            print "Unable to connect to server"
         else:
             try:
-                resp = stub.GetTicket(service.grpc_stub.phishstory_pb2.GetTicketRequest(ticketId=ticketId), timeout=5)
-            except grpc.RpcError as e:
-                self._logger.error("Unable to perform GetTicket on ticket {}".format(ticketId))
+                resp = stub.GetTicket(pb.phishstory_pb2.GetTicketRequest(ticketId=ticketId), timeout=5)
+            except Exception as e:
+                print "Unable to perform GetTicket on ticket {}".format(e.message)
         finally:
             return resp
 

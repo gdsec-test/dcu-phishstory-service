@@ -4,19 +4,18 @@ import time
 
 import grpc
 import yaml
+import pb.phishstory_pb2_grpc
 from celery import Celery
 from concurrent import futures
+from pb.convertor import protobuf_to_dict, dict_to_protobuf
+from pb.phishstory_pb2_grpc import PhishstoryServicer
 
-import service.grpc_stub.phishstory_pb2
-import service.grpc_stub.phishstory_pb2_grpc
 from celeryconfig import CeleryConfig
-from service.api.snow_api import SNOWAPI
-from service.grpc_stub.convertor import protobuf_to_dict, dict_to_protobuf
-from service.grpc_stub.phishstory_pb2 import CreateTicketResponse, \
+from pb.phishstory_pb2 import CreateTicketResponse, \
     UpdateTicketResponse, \
     GetTicketsResponse, \
     GetTicketResponse
-from service.grpc_stub.phishstory_pb2_grpc import PhishstoryServicer
+from service.api.snow_api import SNOWAPI
 from settings import config_by_name
 
 app_settings = config_by_name[os.getenv('sysenv') or 'dev']()
@@ -112,7 +111,7 @@ class API(PhishstoryServicer):
 def serve():
     # Configure and start service
     server = grpc.server(thread_pool=futures.ThreadPoolExecutor(max_workers=10))
-    service.grpc_stub.phishstory_pb2_grpc.add_PhishstoryServicer_to_server(
+    pb.phishstory_pb2_grpc.add_PhishstoryServicer_to_server(
         API(), server)
     logger.info("Listening on port 5000...")
     server.add_insecure_port('[::]:5000')

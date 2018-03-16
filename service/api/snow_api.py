@@ -7,6 +7,8 @@ from dcdatabase.phishstorymongo import PhishstoryMongo
 from service.api.interface import DataStore
 from service.connectors.snow import SNOWHelper
 
+from requests import codes
+
 
 class SNOWAPI(DataStore):
 
@@ -50,6 +52,8 @@ class SNOWAPI(DataStore):
                        'proxy',
                        'reporter']
 
+    SUPPORTED_TYPES = ['PHISHING', 'MALWARE', 'SPAM', 'NETWORK_ABUSE']
+
     TICKET_TABLE_NAME = 'u_dcu_ticket'
 
     def __init__(self, app_settings, celery):
@@ -58,28 +62,6 @@ class SNOWAPI(DataStore):
         self._datastore = SNOWHelper(app_settings)
         self._db = PhishstoryMongo(app_settings)
         self._celery = celery
-
-    def check_duplicate(self, source):
-        """
-        Determines whether or not a ticket is currently "Open" matching the provided source
-        :param source:
-        :return:
-        """
-        if not source:
-            self._logger.error("Invalid source URL provided. Failed to check for duplicate ticket")
-            return None
-
-        try:
-            url_args = self._create_url_params_string({'closed': 'false', 'source': urllib.quote_plus(source)})
-            query = '/{table_name}{url_args}'.format(table_name=self.TICKET_TABLE_NAME, url_args=url_args)
-
-            response = self._datastore.get_request(query)
-            snow_data = json.loads(response.content)
-        except Exception as e:
-            self._logger.error("Unable to retrieve result from datastore for {} {}".format(source, e.message))
-            return None
-
-        return bool(snow_data.get('result'))
 
     def create_ticket(self, args):
         """
@@ -90,40 +72,36 @@ class SNOWAPI(DataStore):
         """
 
         # Check to see if the abuse report has been previously submitted for this source
-        is_duplicate = self.check_duplicate(args.get('source'))
-        if is_duplicate or is_duplicate is None:
-            return None
+        is_duplicate = self._check_duplicate(args.get('source'))
+        if is_duplicate is None:
+            raise Exception("Unable to complete your request at this time")
+
+        if is_duplicate:
+            raise Exception("Unable to create new ticket for {}. There is an existing open ticket".format(args.get('source')))
 
         try:
-            response = self._datastore.post_request('/{}'.format(self.TICKET_TABLE_NAME), self._create_json_string(args))
+            payload = self._create_http_payload(args)
+            response = self._datastore.post_request('/{}'.format(self.TICKET_TABLE_NAME), payload)
+
             snow_data = json.loads(response.content)
         except Exception as e:
-            self._logger.error("Error while creating ticket for source {} {}".format(args.get('source'), e.message))
-            return None
+            self._logger.error("Error creating ticket {} {}".format(args.get('source'), e.message))
+            raise Exception("Unable to create ticket for {}".format(args.get('source')))
 
         # SNOW ticket created successfully
-        if response.status_code == 201:
+        if response.status_code == codes.created:
+            if args.get('type') in self.SUPPORTED_TYPES:
 
-            if args.get('type') in ['PHISHING', 'MALWARE', 'SPAM', 'NETWORK_ABUSE']:
                 args['ticketId'] = snow_data['result']['u_number']
                 json_for_middleware = {key: args[key] for key in self.MIDDLEWARE_KEYS}
 
                 if args.get('metadata'):
-                    json_for_middleware['metadata'] = args.get('metadata')
+                    json_for_middleware['metadata'] = args['metadata']
 
                 self._db.add_new_incident(json_for_middleware.get('ticketId'), json_for_middleware)
-                self.send_to_middleware(json_for_middleware)
+                self._send_to_middleware(json_for_middleware)
 
                 return json_for_middleware.get('ticketId')
-        return None
-
-    def send_to_middleware(self, data):
-        try:
-            self._logger.info("Attempting to send payload to Middleware: {}".format(data))
-            self._celery.send_task('run.process', (data,))
-        except Exception as e:
-            self._logger.error("Error sending payload to Middleware {} {}".format(data, e.message))
-
 
     def update_ticket(self, args):
         """
@@ -132,31 +110,26 @@ class SNOWAPI(DataStore):
         :return:
         """
         if args.get('closed') and not args.get('close_reason'):
-            self._logger.error("Unable to close ticket, close_reason not provided {}".format(args.get('ticketId')))
-            return None
+            raise Exception("Unable to close ticket {}. close_reason not provided".format(args.get('ticketId')))
 
         sys_id = self._get_sys_id(args.get('ticketId'))
         if not sys_id:
-            return None
+            raise Exception("Unable to update ticket {} at this time".format(args.get('ticketId')))
 
-        self._logger.info("Attempting to update ticket: {}".format(args.get('ticketId')))
+        self._logger.info("Updating ticket {}".format(args.get('ticketId')))
 
         try:
+            payload = self._create_http_payload(args)
             query = '/{}/{}'.format(self.TICKET_TABLE_NAME, sys_id)
-            response = self._datastore.patch_request(query, self._create_json_string(args))
-
-            snow_data = json.loads(response.content)
-            self._logger.info("RESPONSE CONTENT: {}".format(snow_data))
+            response = self._datastore.patch_request(query, payload)
         except Exception as e:
-            self._logger.error("Error while updating incident {} {}".format(args.get('ticketId'), e.message))
-            return None
+            self._logger.error("Unable to update incident {} {}".format(args.get('ticketId'), e.message))
+            raise Exception("Unable to update ticket {} at this time".format(args.get('ticketId')))
 
-        if response.status_code == 200:
+        if response.status_code == codes.ok:
             if args.get('closed'):
+                self._logger.info("Closing ticket {} with close_reason {}".format(args['ticketId'], args['close_reason']))
                 self._db.close_incident(args['ticketId'], dict(close_reason=args.get('close_reason')))
-
-        return snow_data
-
 
     def get_tickets(self, args):
         """
@@ -169,21 +142,16 @@ class SNOWAPI(DataStore):
         args['sysparm_fields'] = 'u_number'
 
         try:
-            url_args = self._create_url_params_string(args) + '&sysparm_query=active=true^ORDERBYDESCu_number'
-            query = '/{table_name}{url_args}'.format(table_name=self.TICKET_TABLE_NAME, url_args=url_args)
-
+            url_args = self._create_url_params_for_get(args) + '&sysparm_query=active=true^ORDERBYDESCu_number'
+            query = '/{}{}'.format(self.TICKET_TABLE_NAME, url_args)
             response = self._datastore.get_request(query)
+
             snow_data = json.loads(response.content)
         except Exception as e:
-            self._logger.error("Error while getting tickets {} {}".format(args, e.message))
-            return None
+            self._logger.error("Unable to retrieve tickets matching {} {}".format(args, e.message))
+            raise Exception("Unable to retrieve tickets matching {}".format(args))
 
-        ticket_ids = []
-
-        if response.status_code == 200:
-            for ticket in snow_data.get('result', []):
-                ticket_ids.append(ticket.get('u_number'))
-        return ticket_ids
+        return [ticket.get('u_number') for ticket in snow_data.get('result', [])]
 
 
     def get_ticket_info(self, args):
@@ -193,15 +161,13 @@ class SNOWAPI(DataStore):
         :return:
         """
         try:
-            query = '/{table_name}?sysparam_limit=1&u_number={ticketId}'.format(
-                table_name=self.TICKET_TABLE_NAME,
-                ticketId=args.get('ticketId'))
+            query = '/{}?sysparam_limit=1&u_number={}'.format(self.TICKET_TABLE_NAME, args.get('ticketId'))
             response = self._datastore.get_request(query)
 
             snow_data = json.loads(response.content)
         except Exception as e:
-            self._logger.error("Error retrieving ticket info for {} {}".format(args.get('ticketId'), e.message))
-            return None
+            self._logger.error("Unable to retrieve ticket information for {} {}".format(args.get('ticketId'), e.message))
+            raise Exception("Unable to retrieve ticket information for {}".format(args.get('ticketId')))
 
         ticket_data = {}
 
@@ -210,19 +176,72 @@ class SNOWAPI(DataStore):
             if snow_data.get('result'):
                 ticket_data = snow_data['result'][0]
 
-        # To-Do Find a simpler way of converting 'u_closed' to the proper boolean value
-        converted = {}
-        for k, v in ticket_data.iteritems():
-            if k in self.EXTERNAL_DATA:
-                if k == 'u_closed':
-                    v = bool(v)
-                converted[self.EXTERNAL_DATA[k]] = v
-        return converted
+        # Necessary evil for converting unary to bool for gRPC response
+        ticket_data['u_closed'] = True if 'true' in ticket_data['u_closed'].lower() else False
 
+        return {v: ticket_data[k] for k,v in self.EXTERNAL_DATA.iteritems()}
 
-    def _create_url_params_string(self, params):
+    def _check_duplicate(self, source):
         """
+        Determines whether or not a ticket is currently "Open" matching the provided source
+        :param source:
+        :return:
+        """
+        if not source:
+            self._logger.error("Invalid source provided. Failed to check for duplicate ticket")
+            return
 
+        try:
+            url_args = self._create_url_params_for_get({'closed': 'false', 'source': urllib.quote_plus(source)})
+            query = '/{}{}'.format(self.TICKET_TABLE_NAME, url_args)
+            response = self._datastore.get_request(query)
+
+            snow_data = json.loads(response.content)
+        except Exception as e:
+            self._logger.error("Unable to determine if {} is a duplicate {}".format(source, e.message))
+            return
+
+        return bool(snow_data.get('result'))
+
+
+    def _get_sys_id(self, ticketId):
+        """
+        Given a ticketId, attempt to retrieve the associated sys_id to retrieve all related information.
+        :param ticketId:
+        :return:
+        """
+        try:
+            query = '/{}?u_number={}'.format(self.TICKET_TABLE_NAME, ticketId)
+            response = self._datastore.get_request(query)
+
+            snow_data = json.loads(response.content)
+        except Exception as e:
+            self._logger.error("Unable to retrieve SysId for ticket {} {}".format(ticketId, e.message))
+            return
+
+        if response.status_code != 200:
+            self._logger.error("Expected status code 200 got {}".format(response.status_code))
+            return
+
+        if 'result' not in snow_data:
+            self._logger.error("'result' does not exist in snow_data {}".format(snow_data))
+            return
+
+        if not snow_data.get('result'):
+            self._logger.error("No records found for {}".format(ticketId))
+            return
+
+        return snow_data['result'][0]['sys_id']
+
+    def _send_to_middleware(self, data):
+        try:
+            self._logger.info("Sending payload to Middleware {}".format(data))
+            self._celery.send_task('run.process', (data,))
+        except Exception as e:
+            self._logger.error("Unable to send payload to Middleware {} {}".format(data, e.message))
+
+    def _create_url_params_for_get(self, params):
+        """
         Used to create a GET style URL parameter string for SNOW API calls.
         Need a special case for GET TICKETS createdStart and createdEnd, so that
         they employ >= or <= instead of just =
@@ -246,13 +265,11 @@ class SNOWAPI(DataStore):
             elif key == 'createdEnd':
                 operator = created_end
 
-            if key not in self.HTML2SNOW:
-                query.append(str(key) + operator + str(val))
-            else:
-                query.append(self.HTML2SNOW[key] + operator + str(val))
+            k = self.HTML2SNOW[key] if key in self.HTML2SNOW else str(key)
+            query.append(k + operator + str(val))
         return '?' + '&'.join(query)
 
-    def _create_json_string(self, data):
+    def _create_http_payload(self, data):
         """
         Used to create a POST style JSON payload string for SNOW API calls
         :return: A JSON string
@@ -260,50 +277,6 @@ class SNOWAPI(DataStore):
         params_list = {}
 
         for key, val in data.iteritems():
-            if key in self.HTML2SNOW:
-                params_list[self.HTML2SNOW[key]] = val
-            else:
-                params_list[key] = val
+            k = self.HTML2SNOW[key] if key in self.HTML2SNOW else key
+            params_list[k] = val
         return json.dumps(params_list)
-
-    def _convert_snow_to_mongo(self, data):
-        """
-        Converts data returned in SNOW format to one digestible by MongoDB
-        :param data:
-        :return:
-        """
-        ext_data = {}
-        for key, swagKey in self.EXTERNAL_DATA.iteritems():
-            ext_data[swagKey] = data[key] if key in data else None
-        return ext_data
-
-    def _get_sys_id(self, ticketId):
-        """
-        Given a ticketId, attempt to retrieve the associated sys_id to retrieve all related information.
-        :param ticketId:
-        :return:
-        """
-        self._logger.info("Attempting to retrieve SysId for {}".format(ticketId))
-
-        try:
-            query = '/{table}?u_number={ticket}'.format(table=self.TICKET_TABLE_NAME, ticket=ticketId)
-            response = self._datastore.get_request(query)
-
-            snow_data = json.loads(response.content)
-        except Exception as e:
-            self._logger.error("Error while retrieving SysID for Ticket {} {}".format(ticketId, e.message))
-            return None
-
-        if response.status_code != 200:
-            self._logger.error("Expected status code 200 got {}".format(response.status_code))
-            return None
-
-        if 'result' not in snow_data:
-            self._logger.error("Unable to complete your request at this time")
-            return None
-
-        if not snow_data.get('result'):
-            self._logger.error("No records found for {}".format(ticketId))
-            return None
-
-        return snow_data['result'][0]['sys_id']

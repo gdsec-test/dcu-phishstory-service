@@ -166,17 +166,16 @@ class SNOWAPI(DataStore):
             self._logger.error("Unable to retrieve ticket information for {} {}".format(args.get('ticketId'), e.message))
             raise Exception("Unable to retrieve ticket information for {}".format(args.get('ticketId')))
 
-        ticket_data = {}
+        if response.status_code != codes.ok:
+            raise Exception("Unable to retrieve ticket information for {}".format(args.get('ticketId')))
 
-        if response.status_code == 200:
-            self._logger.info("Retrieved info for ticket {}: {}".format(args.get('ticketId'), snow_data))
-            if snow_data.get('result'):
-                ticket_data = snow_data['result'][0]
+        self._logger.info("Retrieved info for ticket {}: {}".format(args.get('ticketId'), snow_data))
+        if snow_data.get('result'):
+            ticket_data = snow_data['result'][0]
 
-        # Necessary evil for converting unary to bool for gRPC response
-        ticket_data['u_closed'] = True if 'true' in ticket_data['u_closed'].lower() else False
-
-        return {v: ticket_data[k] for k, v in self.EXTERNAL_DATA.iteritems()}
+            # Necessary evil for converting unicode to bool for gRPC response
+            ticket_data['u_closed'] = True if 'true' in ticket_data['u_closed'].lower() else False
+            return {v: ticket_data[k] for k, v in self.EXTERNAL_DATA.iteritems()}
 
     def _check_duplicate(self, source):
         """
@@ -215,8 +214,8 @@ class SNOWAPI(DataStore):
             self._logger.error("Unable to retrieve SysId for ticket {} {}".format(ticket_id, e.message))
             return
 
-        if response.status_code != 200:
-            self._logger.error("Expected status code 200 got {}".format(response.status_code))
+        if response.status_code != codes.ok:
+            self._logger.error("Expected status code {} got {}".format(codes.ok, response.status_code))
             return
 
         if 'result' not in snow_data:

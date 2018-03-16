@@ -24,12 +24,12 @@ spec:
           image: "artifactory.secureserver.net:10014/docker-dcu-local/phishstory-service:prod"
           livenessProbe:
             tcpSocket:
-              port: 9000
+              port: 5000
             initialDelaySeconds: 15
             periodSeconds: 20
           readinessProbe:
             tcpSocket:
-              port: 9000
+              port: 5000
             initialDelaySeconds: 5
             periodSeconds: 10
           env:

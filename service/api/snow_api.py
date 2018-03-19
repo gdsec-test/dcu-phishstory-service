@@ -167,6 +167,7 @@ class SNOWAPI(DataStore):
             raise Exception("Unable to retrieve ticket information for {}".format(args.get('ticketId')))
 
         if response.status_code != codes.ok:
+            self._logger.error("Expected status code {} got {}".format(codes.ok, response.status_code))
             raise Exception("Unable to retrieve ticket information for {}".format(args.get('ticketId')))
 
         self._logger.info("Retrieved info for ticket {}: {}".format(args.get('ticketId'), snow_data))

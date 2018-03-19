@@ -18,11 +18,12 @@ handlers:
         stream: ext://sys.stdout
 
 
-# define logging levels, and logging handlers for your modules here
-# each section should define a logging setup for a specific module in
-# your code. If you dont define any loggers, the root logger will process
-# the logging messages
 loggers:
+    # define logging levels, and logging handlers for your modules here
+    # each section should define a logging setup for a specific module in
+    # your code. If you dont define any loggers, the root logger will process
+    # the logging messages
+
     service:
         level: INFO
         handlers: [console]

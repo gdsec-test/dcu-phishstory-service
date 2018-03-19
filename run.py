@@ -50,8 +50,8 @@ class API(PhishstoryServicer):
             data = protobuf_to_dict(request, including_default_value_fields=True)
             ticket_id = self._api.create_ticket(data)
         except Exception as e:
-            context.message = e.message
-            context.code = grpc.StatusCode.INTERNAL
+            context.set_details(e.message)
+            context.set_code(grpc.StatusCode.INTERNAL)
             return CreateTicketResponse()
 
         return CreateTicketResponse(ticketId=ticket_id)
@@ -62,8 +62,8 @@ class API(PhishstoryServicer):
         try:
             ticket_info = self._api.get_ticket_info({'ticketId': request.ticketId})
         except Exception as e:
-            context.message = e.message
-            context.code = grpc.StatusCode.INTERNAL
+            context.set_details(e.message)
+            context.set_code(grpc.StatusCode.INTERNAL)
             return GetTicketResponse()
 
         return dict_to_protobuf(GetTicketResponse, ticket_info, strict=False)
@@ -88,8 +88,8 @@ class API(PhishstoryServicer):
 
             ticket_ids = self._api.get_tickets(data)
         except Exception as e:
-            context.message = e.message
-            context.code = grpc.StatusCode.INTERNAL
+            context.set_details(e.message)
+            context.set_code(grpc.StatusCode.internal)
             return GetTicketsResponse()
 
         return GetTicketsResponse(ticketIds=ticket_ids)
@@ -101,8 +101,8 @@ class API(PhishstoryServicer):
             data = protobuf_to_dict(request)
             self._api.update_ticket(data)
         except Exception as e:
-            context.message = e.message
-            context.code = grpc.StatusCode.INTERNAL
+            context.set_details(e.message)
+            context.set_code(grpc.StatusCode.INTERNAL)
             return UpdateTicketResponse()
 
         return UpdateTicketResponse()

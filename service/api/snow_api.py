@@ -225,4 +225,3 @@ class SNOWAPI(DataStore):
             self._celery.send_task('run.process', (payload,))
         except Exception as e:
             self._logger.error("Unable to send payload to Middleware {} {}".format(payload, e.message))
-

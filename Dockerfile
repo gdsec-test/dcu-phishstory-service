@@ -30,6 +30,6 @@ RUN for dep in blindAl dcdatabase; \
   pip install --compile "/tmp/private_deps/$dep"; \
 done
 
-RUN update-ca-certificates && pip install --compile /tmp && rm -rf /tmp/*
+RUN pip install --compile /tmp && rm -rf /tmp/*
 
 ENTRYPOINT ["/app/runserver.sh"]

@@ -16,8 +16,8 @@ RUN apk update && \
     python-dev \
     py-pip
 
-# Expose grpc port 5000
-EXPOSE 50000
+# Expose grpc port 50051
+EXPOSE 50051
 
 # Move files to new directory in docker container
 COPY ./*.ini ./*.sh ./run.py ./*.yml ./*.py /app/

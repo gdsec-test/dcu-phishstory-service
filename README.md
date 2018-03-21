@@ -97,7 +97,7 @@ class PhishstoryServiceClient:
 
 
 if __name__ == '__main__':
-    client = PhishstoryServiceClient("localhost:5000")
+    client = PhishstoryServiceClient("localhost:50051")
     resp = client.get_ticket("DCU000289618")
     print "Response: {}".format(resp)
 ```

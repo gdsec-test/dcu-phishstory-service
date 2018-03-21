@@ -114,8 +114,8 @@ def serve():
     server = grpc.server(thread_pool=futures.ThreadPoolExecutor(max_workers=10))
     pb.phishstory_pb2_grpc.add_PhishstoryServicer_to_server(
         API(), server)
-    logger.info("Listening on port 5000...")
-    server.add_insecure_port('[::]:5000')
+    logger.info("Listening on port 50051...")
+    server.add_insecure_port('[::]:50051')
     server.start()
 
     try:

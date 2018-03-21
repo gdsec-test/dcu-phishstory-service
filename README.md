@@ -59,17 +59,6 @@ In order to run Phishstory Service locally you must specify the following enviro
 
 You may then run Phishstory Service via `python run.py`
 
-## Rebuild gRPC Stub Files
-Install grpcio-tools via
-```
-pip install grpcio-tools
-```
-
-Then regenerate the stub files using the following command
-```
-python -m grpc_tools.protoc -I./pb/ --python_out=./pb/ --grpc_python_out=./pb/ ./pb/phishstory.proto 
-```
-
 
 ## Example Client Implementation
 ```

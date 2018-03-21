@@ -21,6 +21,8 @@ prep:
 	for entry in $(PRIVATE_PIPS) ; do \
 		cd $(BUILDROOT)/private_pips && git clone $$entry ; \
 	done
+	@echo "Generating gRPC stubs"
+	python -m grpc_tools.protoc -I./pb/ --python_out=./pb/ --grpc_python_out=./pb/ ./pb/phishstory.proto
 
 	# copy the app code to the build root
 	cp -rp ./* $(BUILDROOT)

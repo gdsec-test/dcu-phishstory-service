@@ -3,7 +3,7 @@ import mongomock
 
 from nose.tools import assert_true, assert_false, assert_equal, assert_is_none, assert_raises
 
-from mock import patch, MagicMock
+from mock import patch, MagicMock, PropertyMock
 
 from service.api.snow_api import SNOWAPI, SNOWHelper
 from settings import TestAppConfig
@@ -103,7 +103,16 @@ class TestSNOWAPI:
     @patch.object(SNOWHelper, 'get_request')
     def test_get_tickets(self, get_request):
         get_request.return_value = MagicMock(content=json.dumps({'result': [{'u_number': '1'}, {'u_number': '2'}]}))
-        assert_equal(self._api.get_tickets({}), ['1', '2'])
+        assert_equal(self._api.get_tickets({}), {'ticketIds': ['1', '2']})
+
+    @patch.object(SNOWHelper, 'get_request')
+    def test_get_tickets_pagination(self, get_request):
+
+        get_request.return_value = MagicMock(status_code=codes.ok,
+                                             headers=MagicMock(_store={'x-total-count': ('X-Total-Count', '2')}),
+                                             content=json.dumps({'result': [{'u_number': '1'}, {'u_number': '2'}]}))
+        pagination = {'firstOffset': 0, 'total': 2, 'limit': 10, 'lastOffset': 0}
+        assert_equal(self._api.get_tickets({'offset': 0, 'limit': 10}), {'ticketIds': ['1', '2'], 'pagination': pagination})
 
     # get_ticket_info tests
     @patch.object(SNOWHelper, 'get_request')

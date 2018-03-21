@@ -19,35 +19,35 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='phishstory.proto',
   package='phishstoryservice',
   syntax='proto3',
-  serialized_pb=_b('\n\x10phishstory.proto\x12\x11phishstoryservice\"N\n\x0eTicketMetadata\x12\x0f\n\x07iris_id\x18\x01 \x01(\x05\x12\x15\n\riris_reporter\x18\x02 \x01(\t\x12\x14\n\x0ciris_created\x18\x03 \x01(\t\"\x80\x02\n\x13\x43reateTicketRequest\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x18\n\x10sourceDomainOrIp\x18\x03 \x01(\t\x12\x17\n\x0fsourceSubDomain\x18\x04 \x01(\t\x12\x0e\n\x06target\x18\x05 \x01(\t\x12\r\n\x05proxy\x18\x06 \x01(\t\x12\x13\n\x0bintentional\x18\x07 \x01(\x08\x12\x10\n\x08reporter\x18\x08 \x01(\t\x12\x0c\n\x04info\x18\t \x01(\t\x12\x0f\n\x07infoUrl\x18\n \x01(\t\x12\x33\n\x08metadata\x18\x0b \x01(\x0b\x32!.phishstoryservice.TicketMetadata\"(\n\x14\x43reateTicketResponse\x12\x10\n\x08ticketId\x18\x01 \x01(\t\"$\n\x10GetTicketRequest\x12\x10\n\x08ticketId\x18\x01 \x01(\t\"\xcd\x01\n\x11GetTicketResponse\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x10\n\x08ticketId\x18\x03 \x01(\t\x12\x10\n\x08reporter\x18\x04 \x01(\t\x12\x17\n\x0fsourceSubDomain\x18\x05 \x01(\t\x12\x18\n\x10sourceDomainOrIp\x18\x06 \x01(\t\x12\x0e\n\x06target\x18\x07 \x01(\t\x12\x0e\n\x06source\x18\x08 \x01(\t\x12\x11\n\tcreatedAt\x18\t \x01(\t\x12\x10\n\x08\x63losedAt\x18\n \x01(\t\"M\n\x13UpdateTicketRequest\x12\x10\n\x08ticketId\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x14\n\x0c\x63lose_reason\x18\x03 \x01(\t\"\x16\n\x14UpdateTicketResponse\"\xb6\x01\n\x11GetTicketsRequest\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x18\n\x10sourceDomainOrIp\x18\x03 \x01(\t\x12\x0e\n\x06target\x18\x04 \x01(\t\x12\x14\n\x0c\x63reatedStart\x18\x05 \x01(\t\x12\x12\n\ncreatedEnd\x18\x06 \x01(\t\x12\r\n\x05limit\x18\x07 \x01(\x05\x12\x0e\n\x06offset\x18\x08 \x01(\x05\x12\x10\n\x08reporter\x18\t \x01(\t\"\'\n\x12GetTicketsResponse\x12\x11\n\tticketIds\x18\x01 \x03(\t2\x89\x03\n\nPhishstory\x12\x61\n\x0c\x43reateTicket\x12&.phishstoryservice.CreateTicketRequest\x1a\'.phishstoryservice.CreateTicketResponse\"\x00\x12\x61\n\x0cUpdateTicket\x12&.phishstoryservice.UpdateTicketRequest\x1a\'.phishstoryservice.UpdateTicketResponse\"\x00\x12X\n\tGetTicket\x12#.phishstoryservice.GetTicketRequest\x1a$.phishstoryservice.GetTicketResponse\"\x00\x12[\n\nGetTickets\x12$.phishstoryservice.GetTicketsRequest\x1a%.phishstoryservice.GetTicketsResponse\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x10phishstory.proto\x12\x11phishstoryservice\"\xe4\x02\n\x13\x43reateTicketRequest\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x18\n\x10sourceDomainOrIp\x18\x03 \x01(\t\x12\x17\n\x0fsourceSubDomain\x18\x04 \x01(\t\x12\x0e\n\x06target\x18\x05 \x01(\t\x12\r\n\x05proxy\x18\x06 \x01(\t\x12\x13\n\x0bintentional\x18\x07 \x01(\x08\x12\x10\n\x08reporter\x18\x08 \x01(\t\x12\x0c\n\x04info\x18\t \x01(\t\x12\x0f\n\x07infoUrl\x18\n \x01(\t\x12G\n\x08metadata\x18\x0b \x01(\x0b\x32\x35.phishstoryservice.CreateTicketRequest.TicketMetadata\x1aN\n\x0eTicketMetadata\x12\x0f\n\x07iris_id\x18\x01 \x01(\x05\x12\x15\n\riris_reporter\x18\x02 \x01(\t\x12\x14\n\x0ciris_created\x18\x03 \x01(\t\"(\n\x14\x43reateTicketResponse\x12\x10\n\x08ticketId\x18\x01 \x01(\t\"$\n\x10GetTicketRequest\x12\x10\n\x08ticketId\x18\x01 \x01(\t\"\xcd\x01\n\x11GetTicketResponse\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x10\n\x08ticketId\x18\x03 \x01(\t\x12\x10\n\x08reporter\x18\x04 \x01(\t\x12\x17\n\x0fsourceSubDomain\x18\x05 \x01(\t\x12\x18\n\x10sourceDomainOrIp\x18\x06 \x01(\t\x12\x0e\n\x06target\x18\x07 \x01(\t\x12\x0e\n\x06source\x18\x08 \x01(\t\x12\x11\n\tcreatedAt\x18\t \x01(\t\x12\x10\n\x08\x63losedAt\x18\n \x01(\t\"M\n\x13UpdateTicketRequest\x12\x10\n\x08ticketId\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x14\n\x0c\x63lose_reason\x18\x03 \x01(\t\"\x16\n\x14UpdateTicketResponse\"\xb6\x01\n\x11GetTicketsRequest\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x18\n\x10sourceDomainOrIp\x18\x03 \x01(\t\x12\x0e\n\x06target\x18\x04 \x01(\t\x12\x14\n\x0c\x63reatedStart\x18\x05 \x01(\t\x12\x12\n\ncreatedEnd\x18\x06 \x01(\t\x12\r\n\x05limit\x18\x07 \x01(\x05\x12\x0e\n\x06offset\x18\x08 \x01(\x05\x12\x10\n\x08reporter\x18\t \x01(\t\"\xee\x01\n\x12GetTicketsResponse\x12\x11\n\tticketIds\x18\x01 \x03(\t\x12\x44\n\npagination\x18\x02 \x01(\x0b\x32\x30.phishstoryservice.GetTicketsResponse.Pagination\x1a\x7f\n\nPagination\x12\r\n\x05total\x18\x01 \x01(\x05\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x13\n\x0b\x66irstOffset\x18\x03 \x01(\x05\x12\x16\n\x0epreviousOffset\x18\x04 \x01(\x05\x12\x12\n\nnextOffset\x18\x05 \x01(\x05\x12\x12\n\nlastOffset\x18\x06 \x01(\x05\x32\x89\x03\n\nPhishstory\x12\x61\n\x0c\x43reateTicket\x12&.phishstoryservice.CreateTicketRequest\x1a\'.phishstoryservice.CreateTicketResponse\"\x00\x12\x61\n\x0cUpdateTicket\x12&.phishstoryservice.UpdateTicketRequest\x1a\'.phishstoryservice.UpdateTicketResponse\"\x00\x12X\n\tGetTicket\x12#.phishstoryservice.GetTicketRequest\x1a$.phishstoryservice.GetTicketResponse\"\x00\x12[\n\nGetTickets\x12$.phishstoryservice.GetTicketsRequest\x1a%.phishstoryservice.GetTicketsResponse\"\x00\x62\x06proto3')
 )
 
 
 
 
-_TICKETMETADATA = _descriptor.Descriptor(
+_CREATETICKETREQUEST_TICKETMETADATA = _descriptor.Descriptor(
   name='TicketMetadata',
-  full_name='phishstoryservice.TicketMetadata',
+  full_name='phishstoryservice.CreateTicketRequest.TicketMetadata',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='iris_id', full_name='phishstoryservice.TicketMetadata.iris_id', index=0,
+      name='iris_id', full_name='phishstoryservice.CreateTicketRequest.TicketMetadata.iris_id', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='iris_reporter', full_name='phishstoryservice.TicketMetadata.iris_reporter', index=1,
+      name='iris_reporter', full_name='phishstoryservice.CreateTicketRequest.TicketMetadata.iris_reporter', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='iris_created', full_name='phishstoryservice.TicketMetadata.iris_created', index=2,
+      name='iris_created', full_name='phishstoryservice.CreateTicketRequest.TicketMetadata.iris_created', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -65,10 +65,9 @@ _TICKETMETADATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=39,
-  serialized_end=117,
+  serialized_start=318,
+  serialized_end=396,
 )
-
 
 _CREATETICKETREQUEST = _descriptor.Descriptor(
   name='CreateTicketRequest',
@@ -157,7 +156,7 @@ _CREATETICKETREQUEST = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[],
+  nested_types=[_CREATETICKETREQUEST_TICKETMETADATA, ],
   enum_types=[
   ],
   options=None,
@@ -166,8 +165,8 @@ _CREATETICKETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=120,
-  serialized_end=376,
+  serialized_start=40,
+  serialized_end=396,
 )
 
 
@@ -197,8 +196,8 @@ _CREATETICKETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=378,
-  serialized_end=418,
+  serialized_start=398,
+  serialized_end=438,
 )
 
 
@@ -228,8 +227,8 @@ _GETTICKETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=420,
-  serialized_end=456,
+  serialized_start=440,
+  serialized_end=476,
 )
 
 
@@ -322,8 +321,8 @@ _GETTICKETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=459,
-  serialized_end=664,
+  serialized_start=479,
+  serialized_end=684,
 )
 
 
@@ -367,8 +366,8 @@ _UPDATETICKETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=666,
-  serialized_end=743,
+  serialized_start=686,
+  serialized_end=763,
 )
 
 
@@ -391,8 +390,8 @@ _UPDATETICKETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=745,
-  serialized_end=767,
+  serialized_start=765,
+  serialized_end=787,
 )
 
 
@@ -478,22 +477,57 @@ _GETTICKETSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=770,
-  serialized_end=952,
+  serialized_start=790,
+  serialized_end=972,
 )
 
 
-_GETTICKETSRESPONSE = _descriptor.Descriptor(
-  name='GetTicketsResponse',
-  full_name='phishstoryservice.GetTicketsResponse',
+_GETTICKETSRESPONSE_PAGINATION = _descriptor.Descriptor(
+  name='Pagination',
+  full_name='phishstoryservice.GetTicketsResponse.Pagination',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='ticketIds', full_name='phishstoryservice.GetTicketsResponse.ticketIds', index=0,
-      number=1, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
+      name='total', full_name='phishstoryservice.GetTicketsResponse.Pagination.total', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='limit', full_name='phishstoryservice.GetTicketsResponse.Pagination.limit', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='firstOffset', full_name='phishstoryservice.GetTicketsResponse.Pagination.firstOffset', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='previousOffset', full_name='phishstoryservice.GetTicketsResponse.Pagination.previousOffset', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='nextOffset', full_name='phishstoryservice.GetTicketsResponse.Pagination.nextOffset', index=4,
+      number=5, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='lastOffset', full_name='phishstoryservice.GetTicketsResponse.Pagination.lastOffset', index=5,
+      number=6, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
@@ -509,12 +543,51 @@ _GETTICKETSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=954,
-  serialized_end=993,
+  serialized_start=1086,
+  serialized_end=1213,
 )
 
-_CREATETICKETREQUEST.fields_by_name['metadata'].message_type = _TICKETMETADATA
-DESCRIPTOR.message_types_by_name['TicketMetadata'] = _TICKETMETADATA
+_GETTICKETSRESPONSE = _descriptor.Descriptor(
+  name='GetTicketsResponse',
+  full_name='phishstoryservice.GetTicketsResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='ticketIds', full_name='phishstoryservice.GetTicketsResponse.ticketIds', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pagination', full_name='phishstoryservice.GetTicketsResponse.pagination', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_GETTICKETSRESPONSE_PAGINATION, ],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=975,
+  serialized_end=1213,
+)
+
+_CREATETICKETREQUEST_TICKETMETADATA.containing_type = _CREATETICKETREQUEST
+_CREATETICKETREQUEST.fields_by_name['metadata'].message_type = _CREATETICKETREQUEST_TICKETMETADATA
+_GETTICKETSRESPONSE_PAGINATION.containing_type = _GETTICKETSRESPONSE
+_GETTICKETSRESPONSE.fields_by_name['pagination'].message_type = _GETTICKETSRESPONSE_PAGINATION
 DESCRIPTOR.message_types_by_name['CreateTicketRequest'] = _CREATETICKETREQUEST
 DESCRIPTOR.message_types_by_name['CreateTicketResponse'] = _CREATETICKETRESPONSE
 DESCRIPTOR.message_types_by_name['GetTicketRequest'] = _GETTICKETREQUEST
@@ -525,19 +598,20 @@ DESCRIPTOR.message_types_by_name['GetTicketsRequest'] = _GETTICKETSREQUEST
 DESCRIPTOR.message_types_by_name['GetTicketsResponse'] = _GETTICKETSRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-TicketMetadata = _reflection.GeneratedProtocolMessageType('TicketMetadata', (_message.Message,), dict(
-  DESCRIPTOR = _TICKETMETADATA,
-  __module__ = 'phishstory_pb2'
-  # @@protoc_insertion_point(class_scope:phishstoryservice.TicketMetadata)
-  ))
-_sym_db.RegisterMessage(TicketMetadata)
-
 CreateTicketRequest = _reflection.GeneratedProtocolMessageType('CreateTicketRequest', (_message.Message,), dict(
+
+  TicketMetadata = _reflection.GeneratedProtocolMessageType('TicketMetadata', (_message.Message,), dict(
+    DESCRIPTOR = _CREATETICKETREQUEST_TICKETMETADATA,
+    __module__ = 'phishstory_pb2'
+    # @@protoc_insertion_point(class_scope:phishstoryservice.CreateTicketRequest.TicketMetadata)
+    ))
+  ,
   DESCRIPTOR = _CREATETICKETREQUEST,
   __module__ = 'phishstory_pb2'
   # @@protoc_insertion_point(class_scope:phishstoryservice.CreateTicketRequest)
   ))
 _sym_db.RegisterMessage(CreateTicketRequest)
+_sym_db.RegisterMessage(CreateTicketRequest.TicketMetadata)
 
 CreateTicketResponse = _reflection.GeneratedProtocolMessageType('CreateTicketResponse', (_message.Message,), dict(
   DESCRIPTOR = _CREATETICKETRESPONSE,
@@ -582,11 +656,19 @@ GetTicketsRequest = _reflection.GeneratedProtocolMessageType('GetTicketsRequest'
 _sym_db.RegisterMessage(GetTicketsRequest)
 
 GetTicketsResponse = _reflection.GeneratedProtocolMessageType('GetTicketsResponse', (_message.Message,), dict(
+
+  Pagination = _reflection.GeneratedProtocolMessageType('Pagination', (_message.Message,), dict(
+    DESCRIPTOR = _GETTICKETSRESPONSE_PAGINATION,
+    __module__ = 'phishstory_pb2'
+    # @@protoc_insertion_point(class_scope:phishstoryservice.GetTicketsResponse.Pagination)
+    ))
+  ,
   DESCRIPTOR = _GETTICKETSRESPONSE,
   __module__ = 'phishstory_pb2'
   # @@protoc_insertion_point(class_scope:phishstoryservice.GetTicketsResponse)
   ))
 _sym_db.RegisterMessage(GetTicketsResponse)
+_sym_db.RegisterMessage(GetTicketsResponse.Pagination)
 
 
 
@@ -596,8 +678,8 @@ _PHISHSTORY = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=996,
-  serialized_end=1389,
+  serialized_start=1216,
+  serialized_end=1609,
   methods=[
   _descriptor.MethodDescriptor(
     name='CreateTicket',

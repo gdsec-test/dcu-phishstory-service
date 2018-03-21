@@ -85,14 +85,15 @@ class API(PhishstoryServicer):
 
             data['closed'] = request.closed
             data['limit'] = request.limit or 100
+            data['offset'] = request.offset or 0
 
             ticket_ids = self._api.get_tickets(data)
         except Exception as e:
             context.set_details(e.message)
-            context.set_code(grpc.StatusCode.internal)
+            context.set_code(grpc.StatusCode.INTERNAL)
             return GetTicketsResponse()
 
-        return GetTicketsResponse(ticketIds=ticket_ids)
+        return dict_to_protobuf(GetTicketsResponse, ticket_ids)
 
     def UpdateTicket(self, request, context):
         logger.info("Received UpdateTicket Request {}".format(request))

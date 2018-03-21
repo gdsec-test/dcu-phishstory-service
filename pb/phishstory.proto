@@ -2,12 +2,6 @@ syntax="proto3";
 
 package phishstoryservice;
 
-message TicketMetadata {
-    int32  iris_id=1;
-    string iris_reporter=2;
-    string iris_created=3;
-}
-
 message CreateTicketRequest{
     string         type=1;
     string         source=2;
@@ -19,6 +13,13 @@ message CreateTicketRequest{
     string         reporter=8;
     string         info=9;
     string         infoUrl=10;
+
+    message TicketMetadata {
+        int32  iris_id=1;
+        string iris_reporter=2;
+        string iris_created=3;
+    }
+
     TicketMetadata metadata=11;
 }
 
@@ -65,6 +66,17 @@ message GetTicketsRequest{
 
 message GetTicketsResponse{
     repeated string ticketIds=1;
+
+    message Pagination {
+        int32 total=1;
+        int32 limit=2;
+        int32 firstOffset=3;
+        int32 previousOffset=4;
+        int32 nextOffset=5;
+        int32 lastOffset=6;
+    }
+
+    Pagination pagination=2;
 }
 
 service Phishstory{

@@ -149,7 +149,16 @@ class SNOWAPI(DataStore):
             self._logger.error("Unable to retrieve tickets matching {} {}".format(args, e.message))
             raise Exception("Unable to retrieve tickets matching {}".format(args))
 
-        return [ticket.get('u_number') for ticket in snow_data.get('result', [])]
+        ticket_dict = {}
+
+        if response.status_code == codes.ok:
+            store = response.headers._store
+            if 'x-total-count' in store and len(store['x-total-count']) > 1:
+                total_records = int(store['x-total-count'][1])
+                ticket_dict['pagination'] = self._create_pagination_links(args, total_records)
+
+        ticket_dict['ticketIds'] = [ticket.get('u_number') for ticket in snow_data.get('result', [])]
+        return ticket_dict
 
     def get_ticket_info(self, args):
         """
@@ -228,6 +237,43 @@ class SNOWAPI(DataStore):
             return
 
         return snow_data['result'][0]['sys_id']
+
+    def _create_pagination_links(self, args, total_records):
+        """ Refer to the Enterprise Standards for Pagination
+            https://github.secureserver.net/Enterprise-Standards/api-design#pagination
+
+            Links to provide are first, previous (if applicable), next (if applicable),
+            last and total.
+        """
+        offset = args['offset']
+        limit = args['limit']
+
+        # There is always a first link and its offset is zero
+        link_dict = {'limit': limit, 'total': total_records, 'firstOffset': 0}
+
+        # Check for previous links
+        if offset:
+            prev_starting_record = offset - limit
+            link_dict['previousOffset'] = 0 if prev_starting_record < 0 else prev_starting_record
+
+        next_starting_record = offset + limit
+        last_starting_record = (total_records / limit) * limit
+
+        # Check for next links
+        if total_records > next_starting_record:
+            link_dict['nextOffset'] = next_starting_record
+
+        # Check for final paginated card in the deck
+        ''' As an example of the code below, if there are 30 records, and the limit is 10, the last starting record is 
+            20, unlike the situation when there are 31 records, which would cause the last starting record to be 30.
+        '''
+        if total_records % limit == 0:
+            last_starting_record -= 1
+
+        if next_starting_record < last_starting_record or total_records <= next_starting_record:
+            link_dict['lastOffset'] = last_starting_record
+
+        return link_dict
 
     def _send_to_middleware(self, data):
         try:

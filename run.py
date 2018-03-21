@@ -60,7 +60,7 @@ class API(PhishstoryServicer):
         logger.info("Received GetTicket Request {}".format(request))
 
         try:
-            ticket_info = self._api.get_ticket_info({'ticketId': request.ticketId})
+            ticket_info = self._api.get_ticket({'ticketId': request.ticketId})
         except Exception as e:
             context.set_details(e.message)
             context.set_code(grpc.StatusCode.INTERNAL)

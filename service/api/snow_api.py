@@ -12,24 +12,6 @@ from requests import codes
 
 class SNOWAPI(DataStore):
 
-    HTML2SNOW = {
-        'limit': 'sysparm_limit',
-        'offset': 'sysparm_offset',
-        'sourceDomainOrIp': 'u_source_domain_or_ip',
-        'source': 'u_source',
-        'createdStart': 'sys_created_on',
-        'createdEnd': 'u_closed_date',
-        'type': 'u_type',
-        'intentional': 'u_intentional',
-        'target': 'u_target',
-        'reporter': 'u_reporter',
-        'closed': 'u_closed',
-        'proxy': 'u_proxy_ip',
-        'info': 'u_info',
-        'infoUrl': 'u_url_more_info',
-        'ticketId': 'u_number'
-    }
-
     EXTERNAL_DATA = {
         'u_number': 'ticketId',
         'u_reporter': 'reporter',
@@ -70,38 +52,38 @@ class SNOWAPI(DataStore):
         :param args:
         :return:
         """
+        source = args.get('source')
 
         # Check to see if the abuse report has been previously submitted for this source
-        is_duplicate = self._check_duplicate(args.get('source'))
+        is_duplicate = self._check_duplicate(source)
         if is_duplicate is None:
             raise Exception("Unable to complete your request at this time")
 
         if is_duplicate:
-            raise Exception("Unable to create new ticket for {}. There is an existing open ticket".format(args.get('source')))
+            raise Exception("Unable to create new ticket for {}. There is an existing open ticket".format(source))
 
         try:
-            payload = self._create_http_payload(args)
+            payload = self._datastore.create_post_payload(args)
             response = self._datastore.post_request('/{}'.format(self.TICKET_TABLE_NAME), payload)
 
             snow_data = json.loads(response.content)
         except Exception as e:
-            self._logger.error("Error creating ticket {} {}".format(args.get('source'), e.message))
-            raise Exception("Unable to create ticket for {}".format(args.get('source')))
+            self._logger.error("Error creating ticket {} {}".format(source, e.message))
+            raise Exception("Unable to create ticket for {}".format(source))
 
         # SNOW ticket created successfully
-        if response.status_code == codes.created:
-            if args.get('type') in self.SUPPORTED_TYPES:
+        if response.status_code == codes.created and args.get('type') in self.SUPPORTED_TYPES:
+            args['ticketId'] = snow_data['result']['u_number']
+            json_for_middleware = {key: args[key] for key in self.MIDDLEWARE_KEYS}
 
-                args['ticketId'] = snow_data['result']['u_number']
-                json_for_middleware = {key: args[key] for key in self.MIDDLEWARE_KEYS}
+            if args.get('metadata'):
+                json_for_middleware['metadata'] = args['metadata']
 
-                if args.get('metadata'):
-                    json_for_middleware['metadata'] = args['metadata']
+            ticket_id = json_for_middleware.get('ticketId')
+            self._db.add_new_incident(ticket_id, json_for_middleware)
+            self._send_to_middleware(json_for_middleware)
 
-                self._db.add_new_incident(json_for_middleware.get('ticketId'), json_for_middleware)
-                self._send_to_middleware(json_for_middleware)
-
-                return json_for_middleware.get('ticketId')
+            return ticket_id
 
     def update_ticket(self, args):
         """
@@ -117,17 +99,16 @@ class SNOWAPI(DataStore):
             raise Exception("Unable to update ticket {} at this time".format(args.get('ticketId')))
 
         try:
-            payload = self._create_http_payload(args)
+            payload = self._datastore.create_post_payload(args)
             query = '/{}/{}'.format(self.TICKET_TABLE_NAME, sys_id)
             response = self._datastore.patch_request(query, payload)
         except Exception as e:
             self._logger.error("Unable to update incident {} {}".format(args.get('ticketId'), e.message))
             raise Exception("Unable to update ticket {} at this time".format(args.get('ticketId')))
 
-        if response.status_code == codes.ok:
-            if args.get('closed'):
-                self._logger.info("Closing ticket {} with close_reason {}".format(args['ticketId'], args['close_reason']))
-                self._db.close_incident(args['ticketId'], dict(close_reason=args.get('close_reason')))
+        if response.status_code == codes.ok and args.get('closed'):
+            self._logger.info("Closing ticket {} with close_reason {}".format(args['ticketId'], args['close_reason']))
+            self._db.close_incident(args['ticketId'], dict(close_reason=args.get('close_reason')))
 
     def get_tickets(self, args):
         """
@@ -135,12 +116,10 @@ class SNOWAPI(DataStore):
         :param args:
         :return:
         """
-
-        # Add entries to args dictionary for pagination
         args['sysparm_fields'] = 'u_number'
 
         try:
-            url_args = self._create_url_params_for_get(args) + '&sysparm_query=active=true^ORDERBYDESCu_number'
+            url_args = self._datastore.create_url_parameters(args) + '&sysparm_query=active=true^ORDERBYDESCu_number'
             query = '/{}{}'.format(self.TICKET_TABLE_NAME, url_args)
             response = self._datastore.get_request(query)
 
@@ -155,35 +134,37 @@ class SNOWAPI(DataStore):
             store = response.headers._store
             if 'x-total-count' in store and len(store['x-total-count']) > 1:
                 total_records = int(store['x-total-count'][1])
-                ticket_dict['pagination'] = self._create_pagination_links(args, total_records)
+                ticket_dict['pagination'] = SNOWHelper.create_pagination_links(args['offset'], args['limit'],
+                                                                               total_records)
 
         ticket_dict['ticketIds'] = [ticket.get('u_number') for ticket in snow_data.get('result', [])]
         return ticket_dict
 
-    def get_ticket_info(self, args):
+    def get_ticket(self, ticket_id):
         """
         Retrieves all SNOW information for a provided ticketId
-        :param args:
+        :param ticket_id:
         :return:
         """
+
         try:
-            query = '/{}?sysparam_limit=1&u_number={}'.format(self.TICKET_TABLE_NAME, args.get('ticketId'))
+            query = '/{}?sysparam_limit=1&u_number={}'.format(self.TICKET_TABLE_NAME, ticket_id)
             response = self._datastore.get_request(query)
 
             snow_data = json.loads(response.content)
         except Exception as e:
-            self._logger.error("Unable to retrieve ticket information for {} {}".format(args.get('ticketId'), e.message))
-            raise Exception("Unable to retrieve ticket information for {}".format(args.get('ticketId')))
+            self._logger.error("Unable to retrieve ticket information for {} {}".format(ticket_id, e.message))
+            raise Exception("Unable to retrieve ticket information for {}".format(ticket_id))
 
         if response.status_code != codes.ok:
             self._logger.error("Expected status code {} got {}".format(codes.ok, response.status_code))
-            raise Exception("Unable to retrieve ticket information for {}".format(args.get('ticketId')))
+            raise Exception("Unable to retrieve ticket information for {}".format(ticket_id))
 
-        self._logger.info("Retrieved info for ticket {}: {}".format(args.get('ticketId'), snow_data))
+        self._logger.info("Retrieved info for ticket {}: {}".format(ticket_id, snow_data))
         if snow_data.get('result'):
             ticket_data = snow_data['result'][0]
 
-            # Necessary evil for converting unicode to bool for gRPC response
+            # Necessary evil for converting unicode to bool
             ticket_data['u_closed'] = True if 'true' in ticket_data['u_closed'].lower() else False
             return {v: ticket_data[k] for k, v in self.EXTERNAL_DATA.iteritems()}
 
@@ -198,7 +179,7 @@ class SNOWAPI(DataStore):
             return
 
         try:
-            url_args = self._create_url_params_for_get({'closed': 'false', 'source': urllib.quote_plus(source)})
+            url_args = self._datastore.create_url_parameters({'closed': 'false', 'source': urllib.quote_plus(source)})
             query = '/{}{}'.format(self.TICKET_TABLE_NAME, url_args)
             response = self._datastore.get_request(query)
 
@@ -238,87 +219,10 @@ class SNOWAPI(DataStore):
 
         return snow_data['result'][0]['sys_id']
 
-    def _create_pagination_links(self, args, total_records):
-        """ Refer to the Enterprise Standards for Pagination
-            https://github.secureserver.net/Enterprise-Standards/api-design#pagination
-
-            Links to provide are first, previous (if applicable), next (if applicable),
-            last and total.
-        """
-        offset = args['offset']
-        limit = args['limit']
-
-        # There is always a first link and its offset is zero
-        link_dict = {'limit': limit, 'total': total_records, 'firstOffset': 0}
-
-        # Check for previous links
-        if offset:
-            prev_starting_record = offset - limit
-            link_dict['previousOffset'] = 0 if prev_starting_record < 0 else prev_starting_record
-
-        next_starting_record = offset + limit
-        last_starting_record = (total_records / limit) * limit
-
-        # Check for next links
-        if total_records > next_starting_record:
-            link_dict['nextOffset'] = next_starting_record
-
-        # Check for final paginated card in the deck
-        ''' As an example of the code below, if there are 30 records, and the limit is 10, the last starting record is 
-            20, unlike the situation when there are 31 records, which would cause the last starting record to be 30.
-        '''
-        if total_records % limit == 0:
-            last_starting_record -= 1
-
-        if next_starting_record < last_starting_record or total_records <= next_starting_record:
-            link_dict['lastOffset'] = last_starting_record
-
-        return link_dict
-
-    def _send_to_middleware(self, data):
+    def _send_to_middleware(self, payload):
         try:
-            self._logger.info("Sending payload to Middleware {}".format(data))
-            self._celery.send_task('run.process', (data,))
+            self._logger.info("Sending payload to Middleware {}".format(payload))
+            self._celery.send_task('run.process', (payload,))
         except Exception as e:
-            self._logger.error("Unable to send payload to Middleware {} {}".format(data, e.message))
+            self._logger.error("Unable to send payload to Middleware {} {}".format(payload, e.message))
 
-    def _create_url_params_for_get(self, params):
-        """
-        Used to create a GET style URL parameter string for SNOW API calls.
-        Need a special case for GET TICKETS createdStart and createdEnd, so that
-        they employ >= or <= instead of just =
-
-        :param params: A dictionary containing values to convert into URL params
-        :return: A URL parameters string
-        """
-        if not params:
-            return ''
-
-        query = []
-
-        created_start = '>='
-        created_end = '<='
-        all_other = '='
-
-        for key, val in params.iteritems():
-            operator = all_other
-            if key == 'createdStart':
-                operator = created_start
-            elif key == 'createdEnd':
-                operator = created_end
-
-            k = self.HTML2SNOW[key] if key in self.HTML2SNOW else str(key)
-            query.append(k + operator + str(val))
-        return '?' + '&'.join(query)
-
-    def _create_http_payload(self, data):
-        """
-        Used to create a POST style JSON payload string for SNOW API calls
-        :return: A JSON string
-        """
-        params_list = {}
-
-        for key, val in data.iteritems():
-            k = self.HTML2SNOW[key] if key in self.HTML2SNOW else key
-            params_list[k] = val
-        return json.dumps(params_list)

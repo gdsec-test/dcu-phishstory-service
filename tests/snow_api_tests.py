@@ -85,7 +85,6 @@ class TestSNOWAPI:
         _get_sys_id.return_value = 'test-sys-id'
         assert_raises(Exception, self._api.update_ticket, {})
 
-
     @patch.object(SNOWAPI, '_get_sys_id')
     @patch.object(SNOWHelper, 'patch_request')
     def test_update_ticket(self, patch_request, _get_sys_id):
@@ -119,12 +118,12 @@ class TestSNOWAPI:
     def test_get_ticket_info_get_exception(self, get_request):
         get_request.side_effect = Exception()
         get_request.return_value = None
-        assert_raises(Exception, self._api.get_ticket_info, {})
+        assert_raises(Exception, self._api.get_ticket, {})
 
     @patch.object(SNOWHelper, 'get_request')
     def test_get_ticket_info_wrong_status_code(self, get_request):
         get_request.return_value = MagicMock(status_code=codes.not_found, content=json.dumps({}))
-        assert_raises(Exception, self._api.get_ticket_info, {})
+        assert_raises(Exception, self._api.get_ticket, {})
 
     @patch.object(SNOWHelper, 'get_request')
     def test_get_ticket_info(self, get_request):
@@ -134,7 +133,7 @@ class TestSNOWAPI:
         expected = {'ticketId': '1', 'closed': True, 'target': '', 'reporter': '', 'source': '', 'sourceDomainOrIp': '',
                     'createdAt': '', 'closedAt': '', 'type': 'PHISHING', 'proxy': ''}
         get_request.return_value = MagicMock(status_code=codes.ok, content=json.dumps(payload))
-        assert_equal(self._api.get_ticket_info({'ticketId': '1'}), expected)
+        assert_equal(self._api.get_ticket({'ticketId': '1'}), expected)
 
     # _get_sys_id tests
     @patch.object(SNOWHelper, 'get_request')

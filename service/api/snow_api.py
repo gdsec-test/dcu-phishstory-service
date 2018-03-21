@@ -12,7 +12,7 @@ from requests import codes
 
 class SNOWAPI(DataStore):
 
-    EXTERNAL_DATA = {
+    EXTERNAL_DATA = {  # Data that may be returned in a GetTicket request
         'u_number': 'ticketId',
         'u_reporter': 'reporter',
         'u_source': 'source',
@@ -25,7 +25,7 @@ class SNOWAPI(DataStore):
         'u_proxy_ip': 'proxy'
     }
 
-    MIDDLEWARE_KEYS = ['ticketId',
+    MIDDLEWARE_KEYS = ['ticketId',  # Keys that may be passed to the Middleware
                        'type',
                        'source',
                        'sourceDomainOrIp',
@@ -36,7 +36,7 @@ class SNOWAPI(DataStore):
 
     SUPPORTED_TYPES = ['PHISHING', 'MALWARE', 'SPAM', 'NETWORK_ABUSE']
 
-    TICKET_TABLE_NAME = 'u_dcu_ticket'
+    TICKET_TABLE_NAME = 'u_dcu_ticket'  # SNOW table for Phishstory abuse reports
 
     def __init__(self, app_settings, celery):
         self._logger = logging.getLogger(__name__)
@@ -47,8 +47,8 @@ class SNOWAPI(DataStore):
 
     def create_ticket(self, args):
         """
-        Creates a ticket for the provided abuse report in SNOW and MongoDB. Passes along filtered arguments to
-        the middleware queue for further processing and enrichment.
+        Creates a ticket for the provided abuse report in SNOW and MongoDB. Passes filtered arguments to the
+        Middleware for further processing and enrichment.
         :param args:
         :return:
         """
@@ -112,7 +112,7 @@ class SNOWAPI(DataStore):
 
     def get_tickets(self, args):
         """
-        Finds all tickets that match Q parameters provided in args and returns the resulting ticketIds
+        Finds all tickets that match Q parameters provided in args and returns the resulting ticketIds and pagination.
         :param args:
         :return:
         """
@@ -142,7 +142,7 @@ class SNOWAPI(DataStore):
 
     def get_ticket(self, ticket_id):
         """
-        Retrieves all SNOW information for a provided ticketId
+        Retrieves all SNOW information for a provided ticket_id
         :param ticket_id:
         :return:
         """
@@ -170,7 +170,7 @@ class SNOWAPI(DataStore):
 
     def _check_duplicate(self, source):
         """
-        Determines whether or not a ticket is currently "Open" matching the provided source
+        Determines whether or not there is an open ticket with an identical source to the one provided.
         :param source:
         :return:
         """
@@ -192,7 +192,7 @@ class SNOWAPI(DataStore):
 
     def _get_sys_id(self, ticket_id):
         """
-        Given a ticketId, attempt to retrieve the associated sys_id to retrieve all related information.
+        Given a ticket_id, attempt to retrieve the associated sys_id which is SNOW's unique identifier
         :param ticket_id:
         :return:
         """
@@ -220,6 +220,11 @@ class SNOWAPI(DataStore):
         return snow_data['result'][0]['sys_id']
 
     def _send_to_middleware(self, payload):
+        """
+        A helper function to send Celery tasks to the Middleware Queue with the provided payload
+        :param payload:
+        :return:
+        """
         try:
             self._logger.info("Sending payload to Middleware {}".format(payload))
             self._celery.send_task('run.process', (payload,))

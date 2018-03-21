@@ -4,7 +4,7 @@ from requests import sessions
 
 
 class SNOWHelper(object):
-    HTML2SNOW = {
+    HTML2SNOW = {  # A conversion mapping of HTML/MongoDb keys to SNOW keys
         'limit': 'sysparm_limit',
         'offset': 'sysparm_offset',
         'sourceDomainOrIp': 'u_source_domain_or_ip',
@@ -56,13 +56,12 @@ class SNOWHelper(object):
                                 timeout=self.default_timeout)
 
     def create_url_parameters(self, args):
-        """
-        Used to create a GET style URL parameter string for SNOW API calls.
-        Need a special case for GET TICKETS createdStart and createdEnd, so that
-        they employ >= or <= instead of just =
+        """ Used to create a GET style URL parameter string for SNOW API calls.
+            Need a special case for GET TICKETS createdStart and createdEnd, so that
+            they employ >= or <= instead of just =
 
-        :param args: A dictionary containing values to convert into URL params
-        :return: A URL parameters string
+            :param args: A dictionary containing values to convert into URL params
+            :return: A URL parameters string
         """
         if not args:
             return ''
@@ -85,9 +84,9 @@ class SNOWHelper(object):
         return '?' + '&'.join(query)
 
     def create_post_payload(self, args):
-        """
-        Used to create a POST style JSON payload string for SNOW API calls
-        :return: A JSON string
+        """ Used to create a POST style JSON payload string for SNOW API calls
+            :param args:
+            :return: A JSON string
         """
         params_list = {}
 
@@ -103,6 +102,11 @@ class SNOWHelper(object):
 
             Links to provide are first, previous (if applicable), next (if applicable),
             last and total.
+
+            :param offset:
+            :param limit:
+            :param total_records:
+            :return:
         """
         # There is always a first link and its offset is zero
         pagination = {'limit': limit, 'total': total_records, 'firstOffset': 0}

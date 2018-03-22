@@ -5,7 +5,7 @@
     labels:
       app: "phishstory-service"
     # this name is accessible via cluster DNS
-    # ("kelvin-api" or "phishstory-service.<namespace>.svc.cluster.local")
+    # ("phishstory-service" or "phishstory-service.<namespace>.svc.cluster.local")
     name: "phishstory-service"
     namespace: abuse-api-dev
   spec:
@@ -13,6 +13,5 @@
       -
         name: "phishstory-service"
         port: 50051
-        targetPort: 50051
     selector:
       app: "phishstory-service"

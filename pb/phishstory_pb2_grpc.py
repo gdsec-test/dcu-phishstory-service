@@ -34,6 +34,11 @@ class PhishstoryStub(object):
         request_serializer=phishstory__pb2.GetTicketsRequest.SerializeToString,
         response_deserializer=phishstory__pb2.GetTicketsResponse.FromString,
         )
+    self.CheckDuplicate = channel.unary_unary(
+        '/phishstoryservice.Phishstory/CheckDuplicate',
+        request_serializer=phishstory__pb2.CheckDuplicateRequest.SerializeToString,
+        response_deserializer=phishstory__pb2.CheckDuplicateResponse.FromString,
+        )
 
 
 class PhishstoryServicer(object):
@@ -68,6 +73,13 @@ class PhishstoryServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def CheckDuplicate(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_PhishstoryServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -90,6 +102,11 @@ def add_PhishstoryServicer_to_server(servicer, server):
           servicer.GetTickets,
           request_deserializer=phishstory__pb2.GetTicketsRequest.FromString,
           response_serializer=phishstory__pb2.GetTicketsResponse.SerializeToString,
+      ),
+      'CheckDuplicate': grpc.unary_unary_rpc_method_handler(
+          servicer.CheckDuplicate,
+          request_deserializer=phishstory__pb2.CheckDuplicateRequest.FromString,
+          response_serializer=phishstory__pb2.CheckDuplicateResponse.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

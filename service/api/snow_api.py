@@ -55,11 +55,7 @@ class SNOWAPI(DataStore):
         source = args.get('source')
 
         # Check to see if the abuse report has been previously submitted for this source
-        is_duplicate = self._check_duplicate(source)
-        if is_duplicate is None:
-            raise Exception("Unable to complete your request at this time")
-
-        if is_duplicate:
+        if self.check_duplicate(source):
             raise Exception("Unable to create new ticket for {}. There is an existing open ticket".format(source))
 
         try:
@@ -168,15 +164,14 @@ class SNOWAPI(DataStore):
             ticket_data['u_closed'] = True if 'true' in ticket_data['u_closed'].lower() else False
             return {v: ticket_data[k] for k, v in self.EXTERNAL_DATA.iteritems()}
 
-    def _check_duplicate(self, source):
+    def check_duplicate(self, source):
         """
         Determines whether or not there is an open ticket with an identical source to the one provided.
         :param source:
         :return:
         """
         if not source:
-            self._logger.error("Invalid source provided. Failed to check for duplicate ticket")
-            return
+            raise Exception("Invalid source provided. Failed to check for duplicate ticket")
 
         try:
             url_args = self._datastore.create_url_parameters({'closed': 'false', 'source': urllib.quote_plus(source)})
@@ -186,7 +181,7 @@ class SNOWAPI(DataStore):
             snow_data = json.loads(response.content)
         except Exception as e:
             self._logger.error("Unable to determine if {} is a duplicate {}".format(source, e.message))
-            return
+            raise Exception("Unable to complete your request at this time")
 
         return bool(snow_data.get('result'))
 

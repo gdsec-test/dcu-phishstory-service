@@ -14,7 +14,8 @@ from celeryconfig import CeleryConfig
 from pb.phishstory_pb2 import CreateTicketResponse, \
     UpdateTicketResponse, \
     GetTicketsResponse, \
-    GetTicketResponse
+    GetTicketResponse, \
+    CheckDuplicateResponse
 from service.api.snow_api import SNOWAPI
 from settings import config_by_name
 
@@ -107,6 +108,17 @@ class API(PhishstoryServicer):
             return UpdateTicketResponse()
 
         return UpdateTicketResponse()
+
+    def CheckDuplicate(self, request, context):
+        logger.info("Received UpdateTicket Request {}".format(request))
+
+        try:
+            duplicate = self._api.check_duplicate(request.source)
+        except Exception as e:
+            context.set_details(e.message)
+            context.set_code(grpc.StatusCode.INTERNAL)
+            return CheckDuplicateResponse()
+        return CheckDuplicateResponse(duplicate=duplicate)
 
 
 def serve():

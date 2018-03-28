@@ -29,6 +29,7 @@ message CreateTicketResponse{
 
 message GetTicketRequest{
     string ticketId=1;
+    string reporter=2;
 }
 
 message GetTicketResponse{

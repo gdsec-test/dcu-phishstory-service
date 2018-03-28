@@ -46,6 +46,7 @@ class API(PhishstoryServicer):
 
     def CreateTicket(self, request, context):
         logger.info("Received CreateTicket Request {}".format(request))
+        ticket_id = ''
 
         try:
             data = protobuf_to_dict(request, including_default_value_fields=True)
@@ -53,24 +54,25 @@ class API(PhishstoryServicer):
         except Exception as e:
             context.set_details(e.message)
             context.set_code(grpc.StatusCode.INTERNAL)
-            return CreateTicketResponse()
 
-        return CreateTicketResponse(ticketId=ticket_id)
+        return CreateTicketResponse(ticketId=ticket_id) if ticket_id else CreateTicketResponse()
 
     def GetTicket(self, request, context):
         logger.info("Received GetTicket Request {}".format(request))
+        ticket_info = {}
 
         try:
-            ticket_info = self._api.get_ticket(request.ticketId)
+            data = protobuf_to_dict(request)
+            ticket_info = self._api.get_ticket(data)
         except Exception as e:
             context.set_details(e.message)
             context.set_code(grpc.StatusCode.INTERNAL)
-            return GetTicketResponse()
 
-        return dict_to_protobuf(GetTicketResponse, ticket_info, strict=False)
+        return dict_to_protobuf(GetTicketResponse, ticket_info, strict=False) if ticket_info else GetTicketResponse()
 
     def GetTickets(self, request, context):
         logger.info("Received GetTickets Request {}".format(request))
+        ticket_ids = {}
 
         try:
             data = protobuf_to_dict(request)
@@ -92,9 +94,8 @@ class API(PhishstoryServicer):
         except Exception as e:
             context.set_details(e.message)
             context.set_code(grpc.StatusCode.INTERNAL)
-            return GetTicketsResponse()
 
-        return dict_to_protobuf(GetTicketsResponse, ticket_ids)
+        return dict_to_protobuf(GetTicketsResponse, ticket_ids) if ticket_ids else GetTicketsResponse()
 
     def UpdateTicket(self, request, context):
         logger.info("Received UpdateTicket Request {}".format(request))
@@ -105,20 +106,20 @@ class API(PhishstoryServicer):
         except Exception as e:
             context.set_details(e.message)
             context.set_code(grpc.StatusCode.INTERNAL)
-            return UpdateTicketResponse()
 
         return UpdateTicketResponse()
 
     def CheckDuplicate(self, request, context):
         logger.info("Received UpdateTicket Request {}".format(request))
+        duplicate = None
 
         try:
             duplicate = self._api.check_duplicate(request.source)
         except Exception as e:
             context.set_details(e.message)
             context.set_code(grpc.StatusCode.INTERNAL)
-            return CheckDuplicateResponse()
-        return CheckDuplicateResponse(duplicate=duplicate)
+
+        return CheckDuplicateResponse(duplicate=duplicate) if duplicate else CheckDuplicateResponse()
 
 
 def serve():

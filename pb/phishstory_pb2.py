@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='phishstory.proto',
   package='phishstoryservice',
   syntax='proto3',
-  serialized_pb=_b('\n\x10phishstory.proto\x12\x11phishstoryservice\"\xe4\x02\n\x13\x43reateTicketRequest\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x18\n\x10sourceDomainOrIp\x18\x03 \x01(\t\x12\x17\n\x0fsourceSubDomain\x18\x04 \x01(\t\x12\x0e\n\x06target\x18\x05 \x01(\t\x12\r\n\x05proxy\x18\x06 \x01(\t\x12\x13\n\x0bintentional\x18\x07 \x01(\x08\x12\x10\n\x08reporter\x18\x08 \x01(\t\x12\x0c\n\x04info\x18\t \x01(\t\x12\x0f\n\x07infoUrl\x18\n \x01(\t\x12G\n\x08metadata\x18\x0b \x01(\x0b\x32\x35.phishstoryservice.CreateTicketRequest.TicketMetadata\x1aN\n\x0eTicketMetadata\x12\x0f\n\x07iris_id\x18\x01 \x01(\x05\x12\x15\n\riris_reporter\x18\x02 \x01(\t\x12\x14\n\x0ciris_created\x18\x03 \x01(\t\"(\n\x14\x43reateTicketResponse\x12\x10\n\x08ticketId\x18\x01 \x01(\t\"$\n\x10GetTicketRequest\x12\x10\n\x08ticketId\x18\x01 \x01(\t\"\xcd\x01\n\x11GetTicketResponse\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x10\n\x08ticketId\x18\x03 \x01(\t\x12\x10\n\x08reporter\x18\x04 \x01(\t\x12\x17\n\x0fsourceSubDomain\x18\x05 \x01(\t\x12\x18\n\x10sourceDomainOrIp\x18\x06 \x01(\t\x12\x0e\n\x06target\x18\x07 \x01(\t\x12\x0e\n\x06source\x18\x08 \x01(\t\x12\x11\n\tcreatedAt\x18\t \x01(\t\x12\x10\n\x08\x63losedAt\x18\n \x01(\t\"M\n\x13UpdateTicketRequest\x12\x10\n\x08ticketId\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x14\n\x0c\x63lose_reason\x18\x03 \x01(\t\"\x16\n\x14UpdateTicketResponse\"\xb6\x01\n\x11GetTicketsRequest\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x18\n\x10sourceDomainOrIp\x18\x03 \x01(\t\x12\x0e\n\x06target\x18\x04 \x01(\t\x12\x14\n\x0c\x63reatedStart\x18\x05 \x01(\t\x12\x12\n\ncreatedEnd\x18\x06 \x01(\t\x12\r\n\x05limit\x18\x07 \x01(\x05\x12\x0e\n\x06offset\x18\x08 \x01(\x05\x12\x10\n\x08reporter\x18\t \x01(\t\"\xee\x01\n\x12GetTicketsResponse\x12\x11\n\tticketIds\x18\x01 \x03(\t\x12\x44\n\npagination\x18\x02 \x01(\x0b\x32\x30.phishstoryservice.GetTicketsResponse.Pagination\x1a\x7f\n\nPagination\x12\r\n\x05total\x18\x01 \x01(\x05\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x13\n\x0b\x66irstOffset\x18\x03 \x01(\x05\x12\x16\n\x0epreviousOffset\x18\x04 \x01(\x05\x12\x12\n\nnextOffset\x18\x05 \x01(\x05\x12\x12\n\nlastOffset\x18\x06 \x01(\x05\"\'\n\x15\x43heckDuplicateRequest\x12\x0e\n\x06source\x18\x01 \x01(\t\"+\n\x16\x43heckDuplicateResponse\x12\x11\n\tduplicate\x18\x01 \x01(\x08\x32\xf2\x03\n\nPhishstory\x12\x61\n\x0c\x43reateTicket\x12&.phishstoryservice.CreateTicketRequest\x1a\'.phishstoryservice.CreateTicketResponse\"\x00\x12\x61\n\x0cUpdateTicket\x12&.phishstoryservice.UpdateTicketRequest\x1a\'.phishstoryservice.UpdateTicketResponse\"\x00\x12X\n\tGetTicket\x12#.phishstoryservice.GetTicketRequest\x1a$.phishstoryservice.GetTicketResponse\"\x00\x12[\n\nGetTickets\x12$.phishstoryservice.GetTicketsRequest\x1a%.phishstoryservice.GetTicketsResponse\"\x00\x12g\n\x0e\x43heckDuplicate\x12(.phishstoryservice.CheckDuplicateRequest\x1a).phishstoryservice.CheckDuplicateResponse\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x10phishstory.proto\x12\x11phishstoryservice\"\xe4\x02\n\x13\x43reateTicketRequest\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06source\x18\x02 \x01(\t\x12\x18\n\x10sourceDomainOrIp\x18\x03 \x01(\t\x12\x17\n\x0fsourceSubDomain\x18\x04 \x01(\t\x12\x0e\n\x06target\x18\x05 \x01(\t\x12\r\n\x05proxy\x18\x06 \x01(\t\x12\x13\n\x0bintentional\x18\x07 \x01(\x08\x12\x10\n\x08reporter\x18\x08 \x01(\t\x12\x0c\n\x04info\x18\t \x01(\t\x12\x0f\n\x07infoUrl\x18\n \x01(\t\x12G\n\x08metadata\x18\x0b \x01(\x0b\x32\x35.phishstoryservice.CreateTicketRequest.TicketMetadata\x1aN\n\x0eTicketMetadata\x12\x0f\n\x07iris_id\x18\x01 \x01(\x05\x12\x15\n\riris_reporter\x18\x02 \x01(\t\x12\x14\n\x0ciris_created\x18\x03 \x01(\t\"(\n\x14\x43reateTicketResponse\x12\x10\n\x08ticketId\x18\x01 \x01(\t\"6\n\x10GetTicketRequest\x12\x10\n\x08ticketId\x18\x01 \x01(\t\x12\x10\n\x08reporter\x18\x02 \x01(\t\"\xcd\x01\n\x11GetTicketResponse\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x10\n\x08ticketId\x18\x03 \x01(\t\x12\x10\n\x08reporter\x18\x04 \x01(\t\x12\x17\n\x0fsourceSubDomain\x18\x05 \x01(\t\x12\x18\n\x10sourceDomainOrIp\x18\x06 \x01(\t\x12\x0e\n\x06target\x18\x07 \x01(\t\x12\x0e\n\x06source\x18\x08 \x01(\t\x12\x11\n\tcreatedAt\x18\t \x01(\t\x12\x10\n\x08\x63losedAt\x18\n \x01(\t\"M\n\x13UpdateTicketRequest\x12\x10\n\x08ticketId\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x14\n\x0c\x63lose_reason\x18\x03 \x01(\t\"\x16\n\x14UpdateTicketResponse\"\xb6\x01\n\x11GetTicketsRequest\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x0e\n\x06\x63losed\x18\x02 \x01(\x08\x12\x18\n\x10sourceDomainOrIp\x18\x03 \x01(\t\x12\x0e\n\x06target\x18\x04 \x01(\t\x12\x14\n\x0c\x63reatedStart\x18\x05 \x01(\t\x12\x12\n\ncreatedEnd\x18\x06 \x01(\t\x12\r\n\x05limit\x18\x07 \x01(\x05\x12\x0e\n\x06offset\x18\x08 \x01(\x05\x12\x10\n\x08reporter\x18\t \x01(\t\"\xee\x01\n\x12GetTicketsResponse\x12\x11\n\tticketIds\x18\x01 \x03(\t\x12\x44\n\npagination\x18\x02 \x01(\x0b\x32\x30.phishstoryservice.GetTicketsResponse.Pagination\x1a\x7f\n\nPagination\x12\r\n\x05total\x18\x01 \x01(\x05\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x13\n\x0b\x66irstOffset\x18\x03 \x01(\x05\x12\x16\n\x0epreviousOffset\x18\x04 \x01(\x05\x12\x12\n\nnextOffset\x18\x05 \x01(\x05\x12\x12\n\nlastOffset\x18\x06 \x01(\x05\"\'\n\x15\x43heckDuplicateRequest\x12\x0e\n\x06source\x18\x01 \x01(\t\"+\n\x16\x43heckDuplicateResponse\x12\x11\n\tduplicate\x18\x01 \x01(\x08\x32\xf2\x03\n\nPhishstory\x12\x61\n\x0c\x43reateTicket\x12&.phishstoryservice.CreateTicketRequest\x1a\'.phishstoryservice.CreateTicketResponse\"\x00\x12\x61\n\x0cUpdateTicket\x12&.phishstoryservice.UpdateTicketRequest\x1a\'.phishstoryservice.UpdateTicketResponse\"\x00\x12X\n\tGetTicket\x12#.phishstoryservice.GetTicketRequest\x1a$.phishstoryservice.GetTicketResponse\"\x00\x12[\n\nGetTickets\x12$.phishstoryservice.GetTicketsRequest\x1a%.phishstoryservice.GetTicketsResponse\"\x00\x12g\n\x0e\x43heckDuplicate\x12(.phishstoryservice.CheckDuplicateRequest\x1a).phishstoryservice.CheckDuplicateResponse\"\x00\x62\x06proto3')
 )
 
 
@@ -215,6 +215,13 @@ _GETTICKETREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='reporter', full_name='phishstoryservice.GetTicketRequest.reporter', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -228,7 +235,7 @@ _GETTICKETREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=440,
-  serialized_end=476,
+  serialized_end=494,
 )
 
 
@@ -321,8 +328,8 @@ _GETTICKETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=479,
-  serialized_end=684,
+  serialized_start=497,
+  serialized_end=702,
 )
 
 
@@ -366,8 +373,8 @@ _UPDATETICKETREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=686,
-  serialized_end=763,
+  serialized_start=704,
+  serialized_end=781,
 )
 
 
@@ -390,8 +397,8 @@ _UPDATETICKETRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=765,
-  serialized_end=787,
+  serialized_start=783,
+  serialized_end=805,
 )
 
 
@@ -477,8 +484,8 @@ _GETTICKETSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=790,
-  serialized_end=972,
+  serialized_start=808,
+  serialized_end=990,
 )
 
 
@@ -543,8 +550,8 @@ _GETTICKETSRESPONSE_PAGINATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1086,
-  serialized_end=1213,
+  serialized_start=1104,
+  serialized_end=1231,
 )
 
 _GETTICKETSRESPONSE = _descriptor.Descriptor(
@@ -580,8 +587,8 @@ _GETTICKETSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=975,
-  serialized_end=1213,
+  serialized_start=993,
+  serialized_end=1231,
 )
 
 
@@ -611,8 +618,8 @@ _CHECKDUPLICATEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1215,
-  serialized_end=1254,
+  serialized_start=1233,
+  serialized_end=1272,
 )
 
 
@@ -642,8 +649,8 @@ _CHECKDUPLICATERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1256,
-  serialized_end=1299,
+  serialized_start=1274,
+  serialized_end=1317,
 )
 
 _CREATETICKETREQUEST_TICKETMETADATA.containing_type = _CREATETICKETREQUEST
@@ -756,8 +763,8 @@ _PHISHSTORY = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=1302,
-  serialized_end=1800,
+  serialized_start=1320,
+  serialized_end=1818,
   methods=[
   _descriptor.MethodDescriptor(
     name='CreateTicket',

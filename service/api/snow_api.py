@@ -52,11 +52,12 @@ class SNOWAPI(DataStore):
         :param args:
         :return:
         """
+        generic_error = "Unable to create new ticket for {}"
         source = args.get('source')
 
         # Check to see if the abuse report has been previously submitted for this source
         if self.check_duplicate(source):
-            raise Exception("Unable to create new ticket for {}. There is an existing open ticket".format(source))
+            raise Exception(generic_error.format(args.get('source')) + 'There is an existing open ticket')
 
         try:
             payload = self._datastore.create_post_payload(args)
@@ -65,7 +66,11 @@ class SNOWAPI(DataStore):
             snow_data = json.loads(response.content)
         except Exception as e:
             self._logger.error("Error creating ticket {} {}".format(source, e.message))
-            raise Exception("Unable to create ticket for {}".format(source))
+            raise Exception(generic_error.format(args.get('source')))
+
+        if response.status_code != codes.created:
+            self._logger.error("Expected status code {} got status {}".format(codes.ok, response.status_code))
+            raise Exception(generic_error.format(args.get('source')))
 
         # SNOW ticket created successfully
         if response.status_code == codes.created and args.get('type') in self.SUPPORTED_TYPES:
@@ -87,12 +92,13 @@ class SNOWAPI(DataStore):
         :param args:
         :return:
         """
+        generic_error = "Unable to update ticket {} at this time"
         if args.get('closed') and not args.get('close_reason'):
             raise Exception("Unable to close ticket {}. close_reason not provided".format(args.get('ticketId')))
 
         sys_id = self._get_sys_id(args.get('ticketId'))
         if not sys_id:
-            raise Exception("Unable to update ticket {} at this time".format(args.get('ticketId')))
+            raise Exception(generic_error.format(args.get('ticketId')))
 
         try:
             payload = self._datastore.create_post_payload(args)
@@ -100,9 +106,13 @@ class SNOWAPI(DataStore):
             response = self._datastore.patch_request(query, payload)
         except Exception as e:
             self._logger.error("Unable to update incident {} {}".format(args.get('ticketId'), e.message))
-            raise Exception("Unable to update ticket {} at this time".format(args.get('ticketId')))
+            raise Exception(generic_error.format(args.get('ticketId')))
 
-        if response.status_code == codes.ok and args.get('closed'):
+        if response.status_code != codes.ok:
+            self._logger.error("Expected status code {} got status {}".format(codes.ok, response.status_code))
+            raise Exception(generic_error.format(args.get('ticketId')))
+
+        if args.get('closed'):
             self._logger.info("Closing ticket {} with close_reason {}".format(args['ticketId'], args['close_reason']))
             self._db.close_incident(args['ticketId'], dict(close_reason=args.get('close_reason')))
 
@@ -112,6 +122,7 @@ class SNOWAPI(DataStore):
         :param args:
         :return:
         """
+        generic_error = "Unable to retrieve tickets matching {}"
         args['sysparm_fields'] = 'u_number'
 
         try:
@@ -122,29 +133,37 @@ class SNOWAPI(DataStore):
             snow_data = json.loads(response.content)
         except Exception as e:
             self._logger.error("Unable to retrieve tickets matching {} {}".format(args, e.message))
-            raise Exception("Unable to retrieve tickets matching {}".format(args))
+            raise Exception(generic_error.format(args))
+
+        if response.status_code != codes.ok:
+            self._logger.info("Expected status code {} got status {}".format(codes.ok, response.status_code))
+            raise Exception(generic_error.format(args))
+
+        if not snow_data.get('result'):
+            raise Exception(generic_error.format(args))
 
         ticket_dict = {}
 
-        if response.status_code == codes.ok:
-            store = response.headers._store
-            if 'x-total-count' in store and len(store['x-total-count']) > 1:
-                total_records = int(store['x-total-count'][1])
-                ticket_dict['pagination'] = SNOWHelper.create_pagination_links(args['offset'], args['limit'],
-                                                                               total_records)
+        store = response.headers._store
+        if 'x-total-count' in store and len(store['x-total-count']) > 1:
+            total_records = int(store['x-total-count'][1])
+            ticket_dict['pagination'] = SNOWHelper.create_pagination_links(args['offset'], args['limit'],
+                                                                           total_records)
 
         ticket_dict['ticketIds'] = [ticket.get('u_number') for ticket in snow_data.get('result', [])]
         return ticket_dict
 
-    def get_ticket(self, ticket_id):
+    def get_ticket(self, args):
         """
         Retrieves all SNOW information for a provided ticket_id
-        :param ticket_id:
+        :param args:
         :return:
         """
+        ticket_id = args.get('ticketId')
+        ext_user_clause = '&u_reporter=' + args.get('reporter') if args.get('reporter') else ''
 
         try:
-            query = '/{}?sysparam_limit=1&u_number={}'.format(self.TICKET_TABLE_NAME, ticket_id)
+            query = '/{}?sysparam_limit=1&u_number={}{}'.format(self.TICKET_TABLE_NAME, ticket_id, ext_user_clause)
             response = self._datastore.get_request(query)
 
             snow_data = json.loads(response.content)
@@ -156,13 +175,14 @@ class SNOWAPI(DataStore):
             self._logger.error("Expected status code {} got {}".format(codes.ok, response.status_code))
             raise Exception("Unable to retrieve ticket information for {}".format(ticket_id))
 
-        self._logger.info("Retrieved info for ticket {}: {}".format(ticket_id, snow_data))
-        if snow_data.get('result'):
-            ticket_data = snow_data['result'][0]
+        if not snow_data.get('result'):
+            raise Exception("Unable to retrieve ticket information for {}".format(ticket_id))
 
-            # Necessary evil for converting unicode to bool
-            ticket_data['u_closed'] = True if 'true' in ticket_data['u_closed'].lower() else False
-            return {v: ticket_data[k] for k, v in self.EXTERNAL_DATA.iteritems()}
+        ticket_data = snow_data['result'][0]
+
+        # Necessary evil for converting unicode to bool
+        ticket_data['u_closed'] = True if 'true' in ticket_data['u_closed'].lower() else False
+        return {v: ticket_data[k] for k, v in self.EXTERNAL_DATA.iteritems()}
 
     def check_duplicate(self, source):
         """

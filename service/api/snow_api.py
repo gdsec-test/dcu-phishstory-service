@@ -3,39 +3,14 @@ import logging
 import urllib
 
 from dcdatabase.phishstorymongo import PhishstoryMongo
+from requests import codes
 
 from service.api.interface import DataStore
 from service.connectors.snow import SNOWHelper
-
-from requests import codes
+from service.models.ticket_model import SUPPORTED_CLOSURES, SUPPORTED_TYPES, MIDDLEWARE_MODEL, REPORTER_MODEL
 
 
 class SNOWAPI(DataStore):
-
-    EXTERNAL_DATA = {  # Data that may be returned in a GetTicket request
-        'u_number': 'ticketId',
-        'u_reporter': 'reporter',
-        'u_source': 'source',
-        'u_source_domain_or_ip': 'sourceDomainOrIp',
-        'u_closed': 'closed',
-        'sys_created_on': 'createdAt',
-        'u_closed_date': 'closedAt',
-        'u_type': 'type',
-        'u_target': 'target',
-        'u_proxy_ip': 'proxy'
-    }
-
-    MIDDLEWARE_KEYS = ['ticketId',  # Keys that may be passed to the Middleware
-                       'type',
-                       'source',
-                       'sourceDomainOrIp',
-                       'sourceSubDomain',
-                       'target',
-                       'proxy',
-                       'reporter']
-
-    SUPPORTED_TYPES = ['PHISHING', 'MALWARE', 'SPAM', 'NETWORK_ABUSE']
-
     TICKET_TABLE_NAME = 'u_dcu_ticket'  # SNOW table for Phishstory abuse reports
 
     def __init__(self, app_settings, celery):
@@ -55,6 +30,9 @@ class SNOWAPI(DataStore):
         generic_error = "Unable to create new ticket for {}"
         source = args.get('source')
 
+        if args.get('type') not in SUPPORTED_TYPES:
+            raise Exception("Unable to create new ticket for {}. Unsupported type {}".format(args.get('source'), args.get('type')))
+
         # Check to see if the abuse report has been previously submitted for this source
         if self.check_duplicate(source):
             raise Exception(generic_error.format(args.get('source')) + 'There is an existing open ticket')
@@ -73,18 +51,17 @@ class SNOWAPI(DataStore):
             raise Exception(generic_error.format(args.get('source')))
 
         # SNOW ticket created successfully
-        if response.status_code == codes.created and args.get('type') in self.SUPPORTED_TYPES:
-            args['ticketId'] = snow_data['result']['u_number']
-            json_for_middleware = {key: args[key] for key in self.MIDDLEWARE_KEYS}
+        args['ticketId'] = snow_data['result']['u_number']
+        json_for_middleware = {key: args[key] for key in MIDDLEWARE_MODEL}
 
-            if args.get('metadata'):
-                json_for_middleware['metadata'] = args['metadata']
+        if args.get('metadata'):
+            json_for_middleware['metadata'] = args['metadata']
 
-            ticket_id = json_for_middleware.get('ticketId')
-            self._db.add_new_incident(ticket_id, json_for_middleware)
-            self._send_to_middleware(json_for_middleware)
+        ticket_id = json_for_middleware.get('ticketId')
+        self._db.add_new_incident(ticket_id, json_for_middleware)
+        self._send_to_middleware(json_for_middleware)
 
-            return ticket_id
+        return ticket_id
 
     def update_ticket(self, args):
         """
@@ -93,8 +70,12 @@ class SNOWAPI(DataStore):
         :return:
         """
         generic_error = "Unable to update ticket {} at this time"
+
         if args.get('closed') and not args.get('close_reason'):
             raise Exception("Unable to close ticket {}. close_reason not provided".format(args.get('ticketId')))
+
+        if args.get('closed') and args.get('close_reason') not in SUPPORTED_CLOSURES:
+            raise Exception("Invalid close reason provided {}".format(args.get('close_reason')))
 
         sys_id = self._get_sys_id(args.get('ticketId'))
         if not sys_id:
@@ -182,7 +163,7 @@ class SNOWAPI(DataStore):
 
         # Necessary evil for converting unicode to bool
         ticket_data['u_closed'] = True if 'true' in ticket_data['u_closed'].lower() else False
-        return {v: ticket_data[k] for k, v in self.EXTERNAL_DATA.iteritems()}
+        return {v: ticket_data[k] for k, v in REPORTER_MODEL.iteritems()}
 
     def check_duplicate(self, source):
         """

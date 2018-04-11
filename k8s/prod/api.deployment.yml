@@ -21,7 +21,7 @@ spec:
         -
           name: "phishstory-service"
           imagePullPolicy: "Always"
-          image: "artifactory.secureserver.net:10014/docker-dcu-local/phishstory-service:prod"
+          image: "artifactory.secureserver.net:10014/docker-dcu-local/phishstory-service:REPLACE_WITH_GIT_COMMIT"
           livenessProbe:
             tcpSocket:
               port: 50051

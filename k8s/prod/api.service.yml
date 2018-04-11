@@ -7,7 +7,7 @@
     # this name is accessible via cluster DNS
     # ("phishstory-service" or "phishstory-service.<namespace>.svc.cluster.local")
     name: "phishstory-service"
-    namespace: abuse-api-dev
+    namespace: abuse-api-prod
   spec:
     ports:
       -

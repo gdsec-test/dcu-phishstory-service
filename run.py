@@ -4,14 +4,14 @@ import time
 
 import grpc
 import yaml
-import pb.phishstory_pb2_grpc
+import pb.phishstory_service_pb2_grpc
 from celery import Celery
 from concurrent import futures
 from pb.convertor import protobuf_to_dict, dict_to_protobuf
-from pb.phishstory_pb2_grpc import PhishstoryServicer
+from pb.phishstory_service_pb2_grpc import PhishstoryServicer
 
 from celeryconfig import CeleryConfig
-from pb.phishstory_pb2 import CreateTicketResponse, \
+from pb.phishstory_service_pb2 import CreateTicketResponse, \
     UpdateTicketResponse, \
     GetTicketsResponse, \
     GetTicketResponse, \
@@ -125,7 +125,7 @@ class API(PhishstoryServicer):
 def serve():
     # Configure and start service
     server = grpc.server(thread_pool=futures.ThreadPoolExecutor(max_workers=10))
-    pb.phishstory_pb2_grpc.add_PhishstoryServicer_to_server(
+    pb.phishstory_service_pb2_grpc.add_PhishstoryServicer_to_server(
         API(), server)
     logger.info("Listening on port 50051...")
     server.add_insecure_port('[::]:50051')

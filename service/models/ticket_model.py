@@ -3,7 +3,7 @@ SUPPORTED_TYPES = ['PHISHING',  # Supported Abuse Ticket Types
                    'SPAM',
                    'NETWORK_ABUSE',
                    'A_RECORD',
-                   'WIRE_FRAUD',
+                   'FRAUD_WIRE',
                    'IP_BLOCK',
                    'CONTENT']
 

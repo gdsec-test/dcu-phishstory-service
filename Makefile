@@ -17,9 +17,9 @@ all: prep dev
 prep:
 	@echo "----- preparing $(REPONAME) build -----"
 	# stage pips we will need to install in Docker build
-	mkdir -p $(BUILDROOT)/private_pips && rm -rf $(BUILDROOT)/private_pips/*
+	mkdir -p $(BUILDROOT)/private_deps && rm -rf $(BUILDROOT)/private_deps/*
 	for entry in $(PRIVATE_PIPS) ; do \
-		cd $(BUILDROOT)/private_pips && git clone $$entry ; \
+		cd $(BUILDROOT)/private_deps && git clone $$entry ; \
 	done
 
 	# copy the app code to the build root

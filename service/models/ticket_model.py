@@ -14,7 +14,8 @@ SUPPORTED_CLOSURES = ['unresolvable',  # Supported Ticket Close Reasons
                       'false_positive',
                       'suspended',
                       'intentionally_malicious',
-                      'shared_ip']
+                      'shared_ip',
+                      'transferred']
 
 MIDDLEWARE_MODEL = ['ticketId',  # Data model that should be passed to Middleware
                     'type',

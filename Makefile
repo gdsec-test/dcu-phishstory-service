@@ -6,8 +6,7 @@ COMMIT=
 BUILD_BRANCH=origin/master
 SHELL=/bin/bash
 
-PRIVATE_PIPS="git@github.secureserver.net:ITSecurity/blindAl.git" \
-"git@github.secureserver.net:ITSecurity/dcdatabase.git"
+PRIVATE_PIPS="git@github.secureserver.net:ITSecurity/dcdatabase.git"
 
 .PHONY: prep dev stage ote prod clean dev-deploy ote-deploy prod-deploy
 

@@ -1,12 +1,9 @@
 import os
 import urllib
 
-from encryption_helper import PasswordDecrypter
-
 
 class AppConfig(object):
     SNOW_URL = None
-
     SNOW_USER = 'dcuapi'
 
     DBURL = 'localhost'
@@ -16,9 +13,8 @@ class AppConfig(object):
     COLLECTION = 'incidents'
 
     def __init__(self):
-        self.SNOW_PASS = PasswordDecrypter.decrypt(os.getenv('SNOW_PASS') or 'password')
-        self.DB_PASS = os.getenv('DB_PASS') or 'password'
-        self.DB_PASS = urllib.quote(PasswordDecrypter.decrypt(self.DB_PASS))
+        self.SNOW_PASS = os.getenv('SNOW_PASS', 'snow_pass')
+        self.DB_PASS = urllib.quote(os.getenv('DB_PASS', 'password'))
         self.DBURL = 'mongodb://{}:{}@{}/{}'.format(self.DB_USER, self.DB_PASS, self.DB_HOST, self.DB)
 
 

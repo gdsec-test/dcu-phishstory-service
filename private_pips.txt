@@ -1,2 +1,1 @@
-git+ssh://git@github.secureserver.net/ITSecurity/blindAl.git
 git+ssh://git@github.secureserver.net/ITSecurity/dcdatabase.git

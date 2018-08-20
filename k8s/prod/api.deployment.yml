@@ -37,8 +37,6 @@ spec:
             value: prod
           - name: BUILD_DATE
             value: 'THIS_STRING_IS_REPLACED_DURING_BUILD'
-          - name: KEYFILE
-            value: /keyfiles/key.txt
           - name: SNOW_PASS
             valueFrom:
               secretKeyRef:
@@ -47,19 +45,10 @@ spec:
           - name: BROKER_PASS
             valueFrom:
               secretKeyRef:
-                name: amqp-api
+                name: amqp-phishstory-service
                 key: password
           - name: DB_PASS
             valueFrom:
               secretKeyRef:
-                name: db-cmap-service
+                name: db-phishstory-service
                 key: password
-          volumeMounts:
-          - name: encryption-keys
-            mountPath: /keyfiles
-            readOnly: true
-
-      volumes:
-        - name: encryption-keys
-          secret:
-            secretName: encryption-key-files

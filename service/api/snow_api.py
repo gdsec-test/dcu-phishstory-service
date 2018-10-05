@@ -7,7 +7,8 @@ from requests import codes
 
 from service.api.interface import DataStore
 from service.connectors.snow import SNOWHelper
-from service.models.ticket_model import SUPPORTED_CLOSURES, SUPPORTED_TYPES, MIDDLEWARE_MODEL, REPORTER_MODEL
+from service.models.ticket_model import (MIDDLEWARE_MODEL, REPORTER_MODEL,
+                                         SUPPORTED_CLOSURES, SUPPORTED_TYPES)
 
 
 class SNOWAPI(DataStore):

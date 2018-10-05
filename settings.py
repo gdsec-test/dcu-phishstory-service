@@ -60,6 +60,7 @@ class TestAppConfig(AppConfig):
     DBURL = 'mongodb://devuser:phishstory@10.22.188.208/devphishstory'
     DB = 'devphishstory'
 
+
 config_by_name = {'dev': DevelopmentAppConfig,
                   'ote': OTEAppConfig,
                   'prod': ProductionAppConfig,

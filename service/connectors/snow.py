@@ -124,7 +124,7 @@ class SNOWHelper(object):
             pagination['nextOffset'] = next_starting_record
 
         # Check for final paginated card in the deck
-        ''' As an example of the code below, if there are 30 records, and the limit is 10, the last starting record is 
+        ''' As an example of the code below, if there are 30 records, and the limit is 10, the last starting record is
             20, unlike the situation when there are 31 records, which would cause the last starting record to be 30.
         '''
         if total_records % limit == 0:

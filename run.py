@@ -1,25 +1,24 @@
 import logging.config
 import os
 import time
+from concurrent import futures
 
 import grpc
 import yaml
-import pb.phishstory_service_pb2_grpc
 from celery import Celery
-from concurrent import futures
-from pb.convertor import protobuf_to_dict, dict_to_protobuf
-from pb.phishstory_service_pb2_grpc import PhishstoryServicer
 
+import pb.phishstory_service_pb2_grpc
 from celeryconfig import CeleryConfig
-from pb.phishstory_service_pb2 import CreateTicketResponse, \
-    UpdateTicketResponse, \
-    GetTicketsResponse, \
-    GetTicketResponse, \
-    CheckDuplicateResponse
+from pb.convertor import dict_to_protobuf, protobuf_to_dict
+from pb.phishstory_service_pb2 import (CheckDuplicateResponse,
+                                       CreateTicketResponse, GetTicketResponse,
+                                       GetTicketsResponse,
+                                       UpdateTicketResponse)
+from pb.phishstory_service_pb2_grpc import PhishstoryServicer
 from service.api.snow_api import SNOWAPI
 from settings import config_by_name
 
-app_settings = config_by_name[os.getenv('sysenv') or 'dev']()
+app_settings = config_by_name[os.getenv('sysenv', 'dev')]()
 
 capp = Celery()
 capp.config_from_object(CeleryConfig())
@@ -77,12 +76,11 @@ class API(PhishstoryServicer):
         try:
             data = protobuf_to_dict(request)
 
-            ''' 
+            '''
             Protobuf3 does not delineate between default values and values that are set but equal to default values.
-            In this case any booleans such as 'closed' or 'intentional' will always be False unless set to True. 
+            In this case any booleans such as 'closed' or 'intentional' will always be False unless set to True.
             Since the behavior provided by always included these booleans in queries is relatively benign, we include them
             regardless whether or not their values are True or False.
-            
             See https://developers.google.com/protocol-buffers/docs/proto3 for more information regarding Protobuf defaults
             '''
 

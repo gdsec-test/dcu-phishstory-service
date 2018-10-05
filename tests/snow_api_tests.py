@@ -1,14 +1,13 @@
 import json
+
 import mongomock
-
-from nose.tools import assert_true, assert_false, assert_equal, assert_is_none, assert_raises
-
-from mock import patch, MagicMock, PropertyMock
+from mock import MagicMock, patch
+from nose.tools import (assert_equal, assert_false, assert_is_none,
+                        assert_raises, assert_true)
+from requests import codes
 
 from service.api.snow_api import SNOWAPI, SNOWHelper
 from settings import TestAppConfig
-
-from requests import codes
 
 
 class TestSNOWAPI:
@@ -160,8 +159,8 @@ class TestSNOWAPI:
     @patch.object(SNOWHelper, 'get_request')
     def test_get_ticket_info(self, get_request):
         payload = {'result': [{'u_number': '1', 'u_closed': 'true', 'u_target': '', 'u_reporter': '', 'u_source': '',
-                   'u_source_domain_or_ip': '', 'sys_created_on': '', 'u_closed_date': '', 'u_type': 'PHISHING',
-                   'u_proxy_ip': ''}]}
+                               'u_source_domain_or_ip': '', 'sys_created_on': '', 'u_closed_date': '',
+                               'u_type': 'PHISHING', 'u_proxy_ip': ''}]}
         expected = {'ticketId': '1', 'closed': True, 'target': '', 'reporter': '', 'source': '', 'sourceDomainOrIp': '',
                     'createdAt': '', 'closedAt': '', 'type': 'PHISHING', 'proxy': ''}
         get_request.return_value = MagicMock(status_code=codes.ok, content=json.dumps(payload))

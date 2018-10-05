@@ -4,26 +4,17 @@ Phishstory Service is a gRPC service that provides CRUD functionality for Abuse 
 
 ## Cloning
 To clone the repository via SSH perform the following
-
 ```
 git clone git@github.secureserver.net:ITSecurity/phishstory-service.git
 ```
 
-It is recommended that you clone this project into a pyvirtualenv or equivalent virtual environment. 
+It is recommended that you clone this project into a pyvirtualenv or equivalent virtual environment.
 
 ## Installing Dependencies
-You can install the required private dependencies via 
-```
-pip install -r private_pips.txt
-```
-
-Followed by install public dependencies via 
-```
-pip install -r requirements.txt
-```
+To install all dependencies for development and testing simply run `make`.
 
 ## Building
-In order to build the project locally you can run the following commands
+To compile the project run one of the make targets
 
 ```
 make [dev, ote, prod]
@@ -31,20 +22,28 @@ make [dev, ote, prod]
 
 
 ## Deploying
-Deploying Phishstory Service to Kubernetes can be achieved by
-
+Deploying the Docker image to Kubernetes can be achieved via
 ```
 make [dev, ote, prod]-deploy
 ```
-
+You must also ensure you have the proper push permissions to Artifactory or you may experience a `Forbidden` message.
 
 ## Testing
-In order to run the tests you must first install the required dependencies via
 ```
-pip install -r test_requirements.txt
+make test     # runs all unit tests
+make testcov  # runs tests with coverage
 ```
 
-Optionally, you may provide the flags --with-coverage --cover-package=service/ to nosetests to determine the test coverage of this project.
+## Style and Standards
+All deploys must pass Flake8 linting and all unit tests which are baked into the [Makefile](Makfile).
+
+There are a few commands that might be useful to ensure consistent Python style:
+
+```
+make flake8  # Runs the Flake8 linter
+make isort   # Sorts all imports
+make tools   # Runs both Flake8 and isort
+```
 
 ## Built With
 1. gRPC

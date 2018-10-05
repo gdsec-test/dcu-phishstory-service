@@ -8,12 +8,39 @@ SHELL=/bin/bash
 
 PRIVATE_PIPS="git@github.secureserver.net:ITSecurity/dcdatabase.git"
 
-.PHONY: prep dev stage ote prod clean dev-deploy ote-deploy prod-deploy
+all: env
 
-all: prep dev
+env:
+	pip install -r test_requirements.txt
+	pip install -r private_pips.txt
+	pip install -r requirements.txt
+
+.PHONY: flake8
+flake8:
+	@echo "----- Running linter -----"
+	flake8 --config ./.flake8 .
+
+.PHONY: isort
+isort:
+	@echo "----- Optimizing imports -----"
+	isort -rc --atomic --skip pb .
+
+.PHONY: tools
+tools: flake8 isort
+
+.PHONY: test
+test:
+	@echo "----- Running tests -----"
+	nosetests tests
+
+.PHONY: testcov
+testcov:
+	@echo "----- Running tests with coverage -----"
+	nosetests tests --with-coverage --cover-erase --cover-package=service
 
 
-prep:
+.PHONY: prep
+prep: tools test
 	@echo "----- preparing $(REPONAME) build -----"
 	# stage pips we will need to install in Docker build
 	mkdir -p $(BUILDROOT)/private_deps && rm -rf $(BUILDROOT)/private_deps/*
@@ -24,6 +51,7 @@ prep:
 	# copy the app code to the build root
 	cp -rp ./* $(BUILDROOT)
 
+.PHONY: prod
 prod: prep
 	@echo "----- building $(REPONAME) prod -----"
 	read -p "About to build production image from $(BUILD_BRANCH) branch. Are you sure? (Y/N): " response ; \
@@ -36,41 +64,37 @@ prod: prep
 	docker build -t $(DOCKERREPO):$(COMMIT) $(BUILDROOT)
 	git checkout -
 
+.PHONY: ote
 ote: prep
 	@echo "----- building $(REPONAME) ote -----"
 	sed -ie 's/THIS_STRING_IS_REPLACED_DURING_BUILD/$(DATE)/g' $(BUILDROOT)/k8s/ote/api.deployment.yml
 	docker build -t $(DOCKERREPO):ote $(BUILDROOT)
 
+.PHONY: dev
 dev: prep
 	@echo "----- building $(REPONAME) dev -----"
 	sed -ie 's/THIS_STRING_IS_REPLACED_DURING_BUILD/$(DATE)/g' $(BUILDROOT)/k8s/dev/api.deployment.yml
 	docker build -t $(DOCKERREPO):dev $(BUILDROOT)
 
-test: prep
-	@echo "----- building $(REPONAME) test -----"
-	sed -ie 's/THIS_STRING_IS_REPLACED_DURING_BUILD/$(DATE)/g' $(BUILDROOT)/k8s/dev/test.api.deployment.yml
-	docker build -t $(DOCKERREPO):test $(BUILDROOT)
-
+.PHONY: prod-deploy
 prod-deploy: prod
 	@echo "----- deploying $(REPONAME) prod -----"
 	docker push $(DOCKERREPO):$(COMMIT)
 	kubectl --context prod apply -f $(BUILDROOT)/k8s/prod/api.deployment.yml --record
 
+.PHONY: ote-deploy
 ote-deploy: ote
 	@echo "----- deploying $(REPONAME) ote -----"
 	docker push $(DOCKERREPO):ote
 	kubectl --context ote apply -f $(BUILDROOT)/k8s/ote/api.deployment.yml --record
 
+.PHONY: dev-deploy
 dev-deploy: dev
 	@echo "----- deploying $(REPONAME) dev -----"
 	docker push $(DOCKERREPO):dev
 	kubectl --context dev apply -f $(BUILDROOT)/k8s/dev/api.deployment.yml --record
 
-test-deploy: test
-	@echo "----- deploying $(REPONAME) test -----"
-	docker push $(DOCKERREPO):test
-	kubectl --context dev apply -f $(BUILDROOT)/k8s/dev/test.api.deployment.yml --record
-
+.PHONY: clean
 clean:
 	@echo "----- cleaning $(REPONAME) app -----"
 	rm -rf $(BUILDROOT)

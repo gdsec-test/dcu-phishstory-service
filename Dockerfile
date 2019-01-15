@@ -1,6 +1,6 @@
 # phishstory-service
 
-FROM artifactory.secureserver.net:10014/docker-dcu-local/grpcio
+FROM docker-dcu-local.artifactory.secureserver.net/grpcio
 MAINTAINER DCUENG <dcueng@godaddy.com>
 
 # Best Practice - Creating a user instead of running as root

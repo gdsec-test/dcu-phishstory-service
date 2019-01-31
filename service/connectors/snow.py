@@ -10,7 +10,7 @@ class SNOWHelper(object):
         'sourceDomainOrIp': 'u_source_domain_or_ip',
         'source': 'u_source',
         'createdStart': 'sys_created_on',
-        'createdEnd': 'u_closed_date',
+        'createdEnd': 'sys_created_on',
         'type': 'u_type',
         'intentional': 'u_intentional',
         'target': 'u_target',
@@ -54,6 +54,27 @@ class SNOWHelper(object):
                                 headers=self.post_headers,
                                 data=json_data_string,
                                 timeout=self.default_timeout)
+
+    def create_param_query(self, created_start, created_end):
+        """Used to create the sysparm query for optional query by min or max ticket creation date
+
+        :param created_start:
+        :param created_end:
+        :return:
+        """
+        jsgen = 'javascript:gs.dateGenerate(%27{}%27,%27{}%27)'
+        early = '00:00:00'
+        late = '23:59:59'
+
+        param_query = ''
+        if created_start and created_end:
+            param_query = '&sysparm_query=sys_created_onBETWEEN{}@{}^ORDERBYDESCu_number'.format(jsgen.format(created_start, early), jsgen.format(created_end, late))
+        elif created_start:
+            param_query = '&sysparm_query=sys_created_on>={}^ORDERBYDESCu_number'.format(jsgen.format(created_start, early))
+        elif created_end:
+            param_query = '&sysparm_query=sys_created_on<={}^ORDERBYDESCu_number'.format(jsgen.format(created_end, late))
+
+        return param_query
 
     def create_url_parameters(self, args):
         """ Used to create a GET style URL parameter string for SNOW API calls.

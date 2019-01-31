@@ -109,7 +109,10 @@ class SNOWAPI(DataStore):
         args['sysparm_fields'] = 'u_number'
 
         try:
-            url_args = self._datastore.create_url_parameters(args) + '&sysparm_query=active=true^ORDERBYDESCu_number'
+            created_start = args.pop('createdStart', None)
+            created_end = args.pop('createdEnd', None)
+            param_query = self._datastore.create_param_query(created_start, created_end)
+            url_args = self._datastore.create_url_parameters(args) + param_query
             query = '/{}{}'.format(self.TICKET_TABLE_NAME, url_args)
             response = self._datastore.get_request(query)
 

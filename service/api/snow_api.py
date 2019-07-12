@@ -58,6 +58,13 @@ class SNOWAPI(DataStore):
         if args.get('metadata'):
             json_for_middleware['metadata'] = args['metadata']
 
+        # Checking for info field for evidence tracking purposes
+        if args.get('info'):
+            json_for_middleware['evidence'] = {
+                'iris': args['info'] == 'IRIS',
+                'snow': args['info'] != 'IRIS'
+            }
+
         ticket_id = json_for_middleware.get('ticketId')
         self._db.add_new_incident(ticket_id, json_for_middleware)
         self._send_to_middleware(json_for_middleware)

@@ -16,7 +16,7 @@ setup(
     author_email='dcueng@godaddy.com',
     description='Provides CRUD functionality for Phishing, Malware, Network Abuse, and Spam Abuse Reports',
     long_description=long_description,
-    url='https://github.secureserver.net/ITSecurity/phishstory-service/',
+    url='https://github.secureserver.net/digital-crimes/phishstory-service/',
     packages=find_packages(exclude=['tests']),
     install_requires=install_reqs,
     tests_require=testing_reqs,

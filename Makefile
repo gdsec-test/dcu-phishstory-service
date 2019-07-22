@@ -1,4 +1,4 @@
-REPONAME=ITSecurity/phishstory-service
+REPONAME=digital-crimes/phishstory-service
 BUILDROOT=$(HOME)/dockerbuild/$(REPONAME)
 DOCKERREPO=docker-dcu-local.artifactory.secureserver.net/phishstory-service
 DATE=$(shell date)

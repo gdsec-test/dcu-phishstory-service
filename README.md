@@ -5,7 +5,7 @@ Phishstory Service is a gRPC service that provides CRUD functionality for Abuse 
 ## Cloning
 To clone the repository via SSH perform the following
 ```
-git clone git@github.secureserver.net:ITSecurity/phishstory-service.git
+git clone git@github.secureserver.net:digital-crimes/phishstory-service.git
 ```
 
 It is recommended that you clone this project into a pyvirtualenv or equivalent virtual environment.

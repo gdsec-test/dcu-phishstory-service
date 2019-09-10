@@ -20,7 +20,7 @@ RUN apk update && \
 EXPOSE 50051
 
 # Move files to new directory in docker container
-COPY ./*.ini ./*.sh ./run.py ./*.yml ./*.py /app/
+COPY ./*.ini ./*.sh ./run.py ./*.yaml ./*.py /app/
 COPY . /tmp
 RUN chown dcu:dcu -R /app
 

@@ -25,7 +25,7 @@ capp.config_from_object(CeleryConfig())
 
 _ONE_DAY_IN_SECONDS = 86400
 
-path = os.path.dirname(os.path.abspath(__file__)) + '/' + 'logging.yml'
+path = os.path.dirname(os.path.abspath(__file__)) + '/' + 'logging.yaml'
 value = os.getenv('LOG_CFG', None)
 if value:
     path = value

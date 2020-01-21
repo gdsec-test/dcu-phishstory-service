@@ -1,5 +1,5 @@
 ---
-apiVersion: "extensions/v1beta1"
+apiVersion: "apps/v1"
 kind: "Deployment"
 metadata:
   name: "phishstory-service"
@@ -9,6 +9,9 @@ metadata:
 spec:
   replicas: 2
   revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: "phishstory-service"
   template:
     metadata:
       labels:

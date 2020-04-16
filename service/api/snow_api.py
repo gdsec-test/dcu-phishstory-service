@@ -2,6 +2,7 @@ import json
 import logging
 import urllib
 
+from dcdatabase.emailmongo import EmailMongo
 from dcdatabase.phishstorymongo import PhishstoryMongo
 from requests import codes
 
@@ -19,6 +20,7 @@ class SNOWAPI(DataStore):
 
         self._datastore = SNOWHelper(app_settings)
         self._db = PhishstoryMongo(app_settings)
+        self._emaildb = EmailMongo(app_settings)
         self._celery = celery
 
     def create_ticket(self, args):
@@ -37,6 +39,9 @@ class SNOWAPI(DataStore):
         # Check to see if the abuse report has been previously submitted for this source
         if self.check_duplicate(source):
             raise Exception(generic_error + " There is an existing open ticket.")
+
+        # reporterEmail should NOT be propagated to SNOW, so we delete the field from args
+        reporter_email = args.pop('reporterEmail', None)
 
         try:
             payload = self._datastore.create_post_payload(args)
@@ -67,6 +72,12 @@ class SNOWAPI(DataStore):
 
         ticket_id = json_for_middleware.get('ticketId')
         self._db.add_new_incident(ticket_id, json_for_middleware)
+
+        # Adds acknowledgement email data into acknowledge_email collection in the DB.
+        # email data = {ticketID, email, created}
+        if reporter_email:
+            self._emaildb.add_new_email({'ticketID': args['ticketId'], 'email': reporter_email})
+
         self._send_to_middleware(json_for_middleware)
 
         return ticket_id

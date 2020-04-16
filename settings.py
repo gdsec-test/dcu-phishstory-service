@@ -11,6 +11,7 @@ class AppConfig(object):
     DB_USER = 'user'
     DB_HOST = 'localhost'
     COLLECTION = 'incidents'
+    EMAIL_COLLECTION = 'acknowledge_email'
 
     def __init__(self):
         self.SNOW_PASS = os.getenv('SNOW_PASS', 'snow_pass')

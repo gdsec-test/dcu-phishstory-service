@@ -16,6 +16,7 @@ class TestSNOWAPI:
     def setup(cls):
         cls._api = SNOWAPI(TestAppConfig(), None)
         cls._api._db._mongo._collection = mongomock.MongoClient().db.collection
+        cls._api._emaildb._mongo._collection = mongomock.MongoClient().db.collection
 
     # _check_duplicate tests
     def test_check_duplicate_none(self):
@@ -64,6 +65,17 @@ class TestSNOWAPI:
 
         data = {'type': 'PHISHING', 'metadata': {'test': 'test'}, 'source': 'test-source', 'sourceDomainOrIp': '', 'sourceSubDomain': '',
                 'proxy': '', 'reporter': '', 'target': ''}
+        assert_equal(self._api.create_ticket(data), 'test-ticket')
+
+    @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
+    @patch.object(SNOWHelper, 'post_request')
+    @patch.object(SNOWAPI, 'check_duplicate', return_value=False)
+    def test_create_ticket_with_reporter_email(self, check_duplicate, post_request, _send_to_middleware):
+        post_request.return_value = MagicMock(status_code=codes.created,
+                                              content=json.dumps({'result': {'u_number': 'test-ticket'}}))
+
+        data = {'type': 'PHISHING', 'metadata': {'test': 'test'}, 'source': 'test-source', 'sourceDomainOrIp': '', 'sourceSubDomain': '',
+                'proxy': '', 'reporter': '', 'target': '', 'reporterEmail': 'test@test.com'}
         assert_equal(self._api.create_ticket(data), 'test-ticket')
 
     # update_ticket tests

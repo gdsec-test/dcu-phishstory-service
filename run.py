@@ -44,11 +44,14 @@ class API(PhishstoryServicer):
         self._api = SNOWAPI(app_settings, capp)
 
     def CreateTicket(self, request, context):
-        logger.info("Received CreateTicket Request {}".format(request))
+        logger.info("Received CreateTicket Request")
         ticket_id = ''
 
         try:
             data = protobuf_to_dict(request, including_default_value_fields=True)
+            logger.info("Fields received in the request : {}".format({'type': data.get('type'),
+                                                                      'source': data.get('source'),
+                                                                      'reporter': data.get('reporter')}))
             ticket_id = self._api.create_ticket(data)
         except Exception as e:
             context.set_details(e.message)

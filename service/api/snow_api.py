@@ -36,12 +36,17 @@ class SNOWAPI(DataStore):
         if args.get('type') not in SUPPORTED_TYPES:
             raise Exception(generic_error + " Unsupported type {}.".format(args.get('type')))
 
-        # Check to see if the abuse report has been previously submitted for this source
-        if self.check_duplicate(source):
-            raise Exception(generic_error + " There is an existing open ticket.")
-
         # reporterEmail should NOT be propagated to SNOW, so we delete the field from args
         reporter_email = args.pop('reporterEmail', None)
+
+        # Check to see if the abuse report has been previously submitted for this source
+        if self.check_duplicate(source):
+            # Adds acknowledgement email data into acknowledge_email collection in the DB.
+            # email data = {source, email, created}
+            if reporter_email:
+                self._emaildb.add_new_email({'ticketID': source, 'email': reporter_email})
+
+            raise Exception(generic_error + " There is an existing open ticket.")
 
         try:
             payload = self._datastore.create_post_payload(args)

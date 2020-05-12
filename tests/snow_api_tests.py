@@ -42,19 +42,18 @@ class TestSNOWAPI:
 
     @patch.object(SNOWAPI, 'check_duplicate', return_value=True)
     def test_create_ticket_duplicate(self, check_duplicate):
-        assert_raises(Exception, self._api.create_ticket, {'source': 'test-source'})
+        assert_raises(Exception, self._api.create_ticket, {'source': 'test-source', 'type': 'SPAM'})
 
     @patch.object(SNOWAPI, 'check_duplicate', return_value=False)
     @patch.object(SNOWHelper, 'post_request', return_value=None, side_effect=Exception())
     def test_create_ticket_exception(self, post_request, check_duplicate):
-        assert_raises(Exception, self._api.create_ticket, {})
+        assert_raises(Exception, self._api.create_ticket, {'source': 'test-source', 'type': 'SPAM'})
 
     @patch.object(SNOWAPI, 'check_duplicate', return_value=False)
     @patch.object(SNOWHelper, 'post_request')
     def test_create_ticket_status_code(self, post_request, check_duplicate):
-        post_request.return_value = MagicMock(status_code=codes.not_found,
-                                              content=json.dumps({}))
-        assert_raises(Exception, self._api.create_ticket, {})
+        post_request.return_value = MagicMock(status_code=codes.not_found, content=json.dumps({}))
+        assert_raises(Exception, self._api.create_ticket, {'source': 'test-source', 'type': 'SPAM'})
 
     @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
     @patch.object(SNOWHelper, 'post_request')
@@ -63,8 +62,8 @@ class TestSNOWAPI:
         post_request.return_value = MagicMock(status_code=codes.created,
                                               content=json.dumps({'result': {'u_number': 'test-ticket'}}))
 
-        data = {'type': 'PHISHING', 'metadata': {'test': 'test'}, 'source': 'test-source', 'sourceDomainOrIp': '', 'sourceSubDomain': '',
-                'proxy': '', 'reporter': '', 'target': ''}
+        data = {'type': 'PHISHING', 'metadata': {'test': 'test'}, 'source': 'test-source',
+                'sourceDomainOrIp': '', 'sourceSubDomain': '', 'proxy': '', 'reporter': '', 'target': ''}
         assert_equal(self._api.create_ticket(data), 'test-ticket')
 
     @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
@@ -74,8 +73,8 @@ class TestSNOWAPI:
         post_request.return_value = MagicMock(status_code=codes.created,
                                               content=json.dumps({'result': {'u_number': 'test-ticket'}}))
 
-        data = {'type': 'PHISHING', 'metadata': {'test': 'test'}, 'source': 'test-source', 'sourceDomainOrIp': '', 'sourceSubDomain': '',
-                'proxy': '', 'reporter': '', 'target': '', 'reporterEmail': 'test@test.com'}
+        data = {'type': 'PHISHING', 'metadata': {'test': 'test'}, 'source': 'test-source', 'sourceDomainOrIp': '',
+                'sourceSubDomain': '', 'proxy': '', 'reporter': '', 'target': '', 'reporterEmail': 'test@test.com'}
         assert_equal(self._api.create_ticket(data), 'test-ticket')
 
     # update_ticket tests

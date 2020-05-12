@@ -14,6 +14,8 @@ from service.models.ticket_model import (MIDDLEWARE_MODEL, REPORTER_MODEL,
 
 class SNOWAPI(DataStore):
     TICKET_TABLE_NAME = 'u_dcu_ticket'  # SNOW table for Phishstory abuse reports
+    EMAIL_KEY = 'email'
+    SOURCE_KEY = 'source'
 
     def __init__(self, app_settings, celery):
         self._logger = logging.getLogger(__name__)
@@ -30,7 +32,7 @@ class SNOWAPI(DataStore):
         :param args:
         :return:
         """
-        source = args.get('source')
+        source = args.get(self.SOURCE_KEY)
         generic_error = "Unable to create new ticket for {}.".format(source)
 
         if args.get('type') not in SUPPORTED_TYPES:
@@ -44,7 +46,7 @@ class SNOWAPI(DataStore):
             # Adds acknowledgement email data into acknowledge_email collection in the DB.
             # email data = {source, email, created}
             if reporter_email:
-                self._emaildb.add_new_email({'ticketID': source, 'email': reporter_email})
+                self._emaildb.add_new_email({self.SOURCE_KEY: source, self.EMAIL_KEY: reporter_email})
 
             raise Exception(generic_error + " There is an existing open ticket.")
 
@@ -79,9 +81,9 @@ class SNOWAPI(DataStore):
         self._db.add_new_incident(ticket_id, json_for_middleware)
 
         # Adds acknowledgement email data into acknowledge_email collection in the DB.
-        # email data = {ticketID, email, created}
+        # email data = {source, email, created}
         if reporter_email:
-            self._emaildb.add_new_email({'ticketID': args['ticketId'], 'email': reporter_email})
+            self._emaildb.add_new_email({self.SOURCE_KEY: source, self.EMAIL_KEY: reporter_email})
 
         self._send_to_middleware(json_for_middleware)
 
@@ -204,7 +206,8 @@ class SNOWAPI(DataStore):
             raise Exception("Invalid source provided. Failed to check for duplicate ticket.")
 
         try:
-            url_args = self._datastore.create_url_parameters({'closed': 'false', 'source': urllib.quote_plus(source)})
+            url_args = self._datastore.create_url_parameters({'closed': 'false',
+                                                              self.SOURCE_KEY: urllib.quote_plus(source)})
             query = '/{}{}'.format(self.TICKET_TABLE_NAME, url_args)
             response = self._datastore.get_request(query)
 

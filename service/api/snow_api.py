@@ -99,14 +99,14 @@ class SNOWAPI(DataStore):
         generic_error = "Unable to update ticket {}.".format(ticket_id)
 
         if args.get('closed') and not args.get('close_reason'):
-            raise Exception(generic_error + " close_reason not provided.".format(ticket_id))
+            raise Exception(generic_error + " close_reason not provided.")
 
         if args.get('closed') and args.get('close_reason') not in SUPPORTED_CLOSURES:
             raise Exception(generic_error + " Invalid close reason provided {}.".format(args.get('close_reason')))
 
         sys_id = self._get_sys_id(ticket_id)
         if not sys_id:
-            raise Exception(generic_error.format)
+            raise Exception(generic_error)
 
         try:
             payload = self._datastore.create_post_payload(args)
@@ -114,11 +114,11 @@ class SNOWAPI(DataStore):
             response = self._datastore.patch_request(query, payload)
         except Exception as e:
             self._logger.error(generic_error + " {}".format(e.message))
-            raise Exception(generic_error.format(args.get('ticketId')))
+            raise Exception(generic_error)
 
         if response.status_code != codes.ok:
             self._logger.error("Expected status code {} got status {}.".format(codes.ok, response.status_code))
-            raise Exception(generic_error.format)
+            raise Exception(generic_error)
 
         if args.get('closed'):
             self._logger.info("Closing ticket {} with close_reason {}.".format(args['ticketId'], args['close_reason']))

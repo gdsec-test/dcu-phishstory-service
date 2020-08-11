@@ -17,6 +17,21 @@ class TestSNOWAPI:
         cls._api = SNOWAPI(TestAppConfig(), None)
         cls._api._db._mongo._collection = mongomock.MongoClient().db.collection
         cls._api._emaildb._mongo._collection = mongomock.MongoClient().db.collection
+        cls._api._db._mongo.add_incident(dict(_id=1234, type='PHISHING', reporter='111222333',
+                                              sourceDomainOrIp='abc.com', phishstory_status='OPEN',
+                                              sourceSubDomain='www.abc.com', source='http://www.abc.com'))
+        cls._api._db._mongo.add_incident(dict(_id=1235, type='PHISHING', reporter='111222333',
+                                              sourceDomainOrIp='abc.com', phishstory_status='PAUSED',
+                                              sourceSubDomain='abc.com', source='http://abc.com'))
+        cls._api._db._mongo.add_incident(dict(_id=1236, type='PHISHING', reporter='111222333',
+                                              sourceDomainOrIp='abc.com', phishstory_status='PROCESSING',
+                                              sourceSubDomain='abc.com', source='http://abc.com'))
+        cls._api._db._mongo.add_incident(dict(_id=1237, type='PHISHING', reporter='111222333',
+                                              sourceDomainOrIp='abc.com', phishstory_status='OPEN',
+                                              sourceSubDomain='www.abc.com', source='http://www.abc.com'))
+        cls._api._db._mongo.add_incident(dict(_id=1238, type='PHISHING', reporter='111222333',
+                                              sourceDomainOrIp='abc.com', phishstory_status='OPEN',
+                                              sourceSubDomain='www.abc.com', source='http://www.abc.com'))
 
     # _check_duplicate tests
     def test_check_duplicate_none(self):
@@ -222,3 +237,69 @@ class TestSNOWAPI:
         mongo_obj = self._api._db.get_incident('test-ticket-snow')
         assert_true(mongo_obj.get('evidence', {}).get('snow'))
         assert_false(mongo_obj.get('evidence', {}).get('iris'))
+
+    @patch.object(SNOWAPI, 'check_duplicate', return_value=False)
+    def test_domain_cap_reached(self, get_request):
+        data = dict(type='PHISHING', reporter='111222333', sourceDomainOrIp='abc.com',
+                    phishstory_status='OPEN', sourceSubDomain='www.abc.com', source='http://www.abc.com')
+        assert_raises(Exception, self._api.create_ticket, data)
+
+    @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
+    @patch.object(SNOWHelper, 'post_request')
+    @patch.object(SNOWAPI, 'check_duplicate', return_value=False)
+    def test_domain_cap_reached_content(self, check_duplicate, post_request, _send_to_middleware):
+        post_request.return_value = MagicMock(status_code=codes.created,
+                                              content=json.dumps({'result': {'u_number': 'test-ticket'}}))
+
+        data = {'type': 'CONTENT', 'metadata': {'test': 'test'}, 'source': 'test-source', 'sourceDomainOrIp': '',
+                'sourceSubDomain': '', 'proxy': '', 'reporter': '', 'target': '',
+                'info': 'EMAIL HEADERS: Header Info - EMAIL CONTENT: Body'}
+        assert_equal(self._api.create_ticket(data), 'test-ticket')
+
+    @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
+    @patch.object(SNOWHelper, 'post_request')
+    @patch.object(SNOWAPI, 'check_duplicate', return_value=False)
+    def test_domain_cap_reached_usergen(self, check_duplicate, post_request, _send_to_middleware):
+        post_request.return_value = MagicMock(status_code=codes.created,
+                                              content=json.dumps({'result': {'u_number': 'test-ticket'}}))
+
+        data = {'type': 'PHISHING', 'metadata': {'test': 'test'}, 'source': 'test-source',
+                'sourceDomainOrIp': 'wix.com', 'sourceSubDomain': '', 'proxy': '', 'reporter': '', 'target': '',
+                'info': 'EMAIL HEADERS: Header Info - EMAIL CONTENT: Body'}
+        assert_equal(self._api.create_ticket(data), 'test-ticket')
+
+    @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
+    @patch.object(SNOWHelper, 'post_request')
+    @patch.object(SNOWAPI, 'check_duplicate', return_value=False)
+    def test_domain_cap_reached_sucuri(self, check_duplicate, post_request, _send_to_middleware):
+        post_request.return_value = MagicMock(status_code=codes.created,
+                                              content=json.dumps({'result': {'u_number': 'test-ticket'}}))
+
+        data = {'type': 'PHISHING', 'metadata': {'test': 'test'}, 'source': 'test-source',
+                'sourceDomainOrIp': '', 'sourceSubDomain': '', 'proxy': '', 'reporter': '198103515', 'target': '',
+                'info': 'EMAIL HEADERS: Header Info - EMAIL CONTENT: Body'}
+        assert_equal(self._api.create_ticket(data), 'test-ticket')
+
+    @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
+    @patch.object(SNOWHelper, 'post_request')
+    @patch.object(SNOWAPI, 'check_duplicate', return_value=False)
+    def test_domain_cap_reached_diff_subdomain(self, check_duplicate, post_request, _send_to_middleware):
+        post_request.return_value = MagicMock(status_code=codes.created,
+                                              content=json.dumps({'result': {'u_number': 'test-ticket'}}))
+
+        data = dict(type='PHISHING', reporter='111222333', sourceDomainOrIp='abc.com',
+                    phishstory_status='OPEN', sourceSubDomain='docs.abc.com', source='http://docs.abc.com',
+                    metadata={}, proxy='', target='')
+        assert_equal(self._api.create_ticket(data), 'test-ticket')
+
+    @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
+    @patch.object(SNOWHelper, 'post_request')
+    @patch.object(SNOWAPI, 'check_duplicate', return_value=False)
+    def test_domain_cap_reached_missing_domain(self, check_duplicate, post_request, _send_to_middleware):
+        post_request.return_value = MagicMock(status_code=codes.created,
+                                              content=json.dumps({'result': {'u_number': 'test-ticket'}}))
+
+        data = {'type': 'PHISHING', 'metadata': {'test': 'test'}, 'source': 'test-source',
+                'sourceDomainOrIp': '', 'sourceSubDomain': '', 'proxy': '', 'reporter': '', 'target': '',
+                'info': 'EMAIL HEADERS: Header Info - EMAIL CONTENT: Body'}
+        assert_equal(self._api.create_ticket(data), 'test-ticket')

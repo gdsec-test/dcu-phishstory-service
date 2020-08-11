@@ -16,6 +16,10 @@ class SNOWAPI(DataStore):
     TICKET_TABLE_NAME = 'u_dcu_ticket'  # SNOW table for Phishstory abuse reports
     EMAIL_KEY = 'email'
     SOURCE_KEY = 'source'
+    USER_GENERATED_DOMAINS = {'joomla.com', 'wix.com', 'wixsite.com', 'htmlcomponentservice.com', 'sendgrid.net',
+                              'mediafire.com', '16mb.com', 'gridserver.com', '000webhost.com', 'filesusr.com',
+                              'usrfiles.com', 'site123.me'}
+    EXEMPT_REPORTERS = {'Sucuri': '198103515', 'DBP': '290638894'}
 
     def __init__(self, app_settings, celery):
         self._logger = logging.getLogger(__name__)
@@ -24,6 +28,36 @@ class SNOWAPI(DataStore):
         self._db = PhishstoryMongo(app_settings)
         self._emaildb = EmailMongo(app_settings)
         self._celery = celery
+        self._exempt_reporter_ids = set(self.EXEMPT_REPORTERS.values())
+
+    # Logic defined in https://confluence.godaddy.com/display/ITSecurity/API+Redesign+Proposal
+    def _domain_cap_reached(self, abuse_type, reporter_id, subdomain, domain):
+        # Dont cap tickets in case of content compalaints, usergen domains, and exempted reporters
+        if abuse_type == 'CONTENT' or \
+            domain in self.USER_GENERATED_DOMAINS or \
+                reporter_id in self._exempt_reporter_ids:
+            return False
+
+        if not (subdomain or domain):
+            return False
+
+        query = {'phishstory_status': {'$ne': 'CLOSED'}, 'type': abuse_type}
+
+        # Prioritize subdomains as we need to cap per subdomain.
+        if subdomain:
+            # Treating subdomains that start with www the same compared to the ones that don't start with www.
+            # For instance www.abc.com and abc.com are the same.
+            if subdomain.startswith('www.') and len(subdomain) > 4:
+                query['$or'] = [{'sourceSubDomain': subdomain},
+                                {'sourceSubDomain': subdomain[4:]}]
+            else:
+                query['sourceSubDomain'] = subdomain
+
+        else:
+            query['sourceDomainOrIp'] = domain
+
+        incidents = self._db.find_incidents(query=query, limit=5)
+        return len(incidents) == 5
 
     def create_ticket(self, args):
         """
@@ -48,6 +82,12 @@ class SNOWAPI(DataStore):
             if reporter_email:
                 self._emaildb.add_new_email({self.SOURCE_KEY: source, self.EMAIL_KEY: reporter_email})
 
+            raise Exception(generic_error + " There is an existing open ticket.")
+
+        # Check if domain cap has been reached for the particular domain
+        if self._domain_cap_reached(args.get('type'), args.get('reporter'), args.get('sourceSubDomain'),
+                                    args.get('sourceDomainOrIp')):
+            self._logger.info("Domain cap reached for: {}".format(source))
             raise Exception(generic_error + " There is an existing open ticket.")
 
         try:

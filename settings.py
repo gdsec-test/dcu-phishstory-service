@@ -1,5 +1,6 @@
 import os
 import urllib
+from distutils.util import strtobool
 
 
 class AppConfig(object):
@@ -17,6 +18,7 @@ class AppConfig(object):
         self.SNOW_PASS = os.getenv('SNOW_PASS', 'snow_pass')
         self.DB_PASS = urllib.quote(os.getenv('DB_PASS', 'password'))
         self.DBURL = 'mongodb://{}:{}@{}/{}'.format(self.DB_USER, self.DB_PASS, self.DB_HOST, self.DB)
+        self.DATABASE_IMPACTED = strtobool(os.getenv('DATABASE_IMPACTED', 'False'))
 
 
 class ProductionAppConfig(AppConfig):

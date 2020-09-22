@@ -32,6 +32,9 @@ class TestSNOWAPI:
         cls._api._db._mongo.add_incident(dict(_id=1238, type='PHISHING', reporter='111222333',
                                               sourceDomainOrIp='abc.com', phishstory_status='OPEN',
                                               sourceSubDomain='www.abc.com', source='http://www.abc.com'))
+        db_downtime = TestAppConfig()
+        db_downtime.DATABASE_IMPACTED = True
+        cls._api_downtime = SNOWAPI(db_downtime, None)
 
     # _check_duplicate tests
     def test_check_duplicate_none(self):
@@ -83,6 +86,20 @@ class TestSNOWAPI:
 
     @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
     @patch.object(SNOWHelper, 'post_request')
+    @patch.object(SNOWAPI, '_domain_cap_reached', return_value=None)
+    @patch.object(SNOWAPI, 'check_duplicate', return_value=False)
+    def test_create_ticket_db_downtime(self, check_duplicate, _domain_cap_reached, post_request, _send_to_middleware):
+        post_request.return_value = MagicMock(status_code=codes.created,
+                                              content=json.dumps({'result': {'u_number': 'test-ticket'}}))
+
+        data = {'type': 'PHISHING', 'metadata': {'test': 'test'}, 'source': 'test-source',
+                'sourceDomainOrIp': '', 'sourceSubDomain': '', 'proxy': '', 'reporter': '', 'target': ''}
+        assert_equal(self._api_downtime.create_ticket(data), 'test-ticket')
+        _send_to_middleware.assert_not_called()
+        _domain_cap_reached.assert_not_called()
+
+    @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
+    @patch.object(SNOWHelper, 'post_request')
     @patch.object(SNOWAPI, 'check_duplicate', return_value=False)
     def test_create_ticket_with_reporter_email(self, check_duplicate, post_request, _send_to_middleware):
         post_request.return_value = MagicMock(status_code=codes.created,
@@ -122,6 +139,9 @@ class TestSNOWAPI:
         patch_request.return_value = MagicMock(status_code=codes.ok, content=json.dumps({}))
         _get_sys_id.return_value = 'test-sys-id'
         assert_is_none(self._api.update_ticket({'ticketId': 'test-ticket', 'closed': True, 'close_reason': 'false_positive'}))
+
+    def test_update_ticket_db_downtime(self):
+        assert_raises(Exception, self._api.update_ticket)
 
     # get_tickets tests
     @patch.object(SNOWHelper, 'get_request')

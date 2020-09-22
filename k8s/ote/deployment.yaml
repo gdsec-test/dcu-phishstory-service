@@ -38,6 +38,8 @@ spec:
           env:
           - name: sysenv
             value: ote
+          - name: DATABASE_IMPACTED
+            value: 'False'
           - name: BUILD_DATE
             value: 'THIS_STRING_IS_REPLACED_DURING_BUILD'
           - name: SNOW_PASS

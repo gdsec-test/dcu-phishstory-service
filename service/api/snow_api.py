@@ -29,10 +29,11 @@ class SNOWAPI(DataStore):
         self._emaildb = EmailMongo(app_settings)
         self._celery = celery
         self._exempt_reporter_ids = set(self.EXEMPT_REPORTERS.values())
+        self._db_impacted = app_settings.DATABASE_IMPACTED
 
     # Logic defined in https://confluence.godaddy.com/display/ITSecurity/API+Redesign+Proposal
     def _domain_cap_reached(self, abuse_type, reporter_id, subdomain, domain):
-        # Dont cap tickets in case of content compalaints, usergen domains, and exempted reporters
+        # Don't cap tickets in case of content complaints, usergen domains, and exempted reporters
         if abuse_type == 'CONTENT' or \
             domain in self.USER_GENERATED_DOMAINS or \
                 reporter_id in self._exempt_reporter_ids:
@@ -77,18 +78,21 @@ class SNOWAPI(DataStore):
 
         # Check to see if the abuse report has been previously submitted for this source
         if self.check_duplicate(source):
-            # Adds acknowledgement email data into acknowledge_email collection in the DB.
+            # Adds acknowledgement email data into acknowledge_email collection in the DB if DB is available
             # email data = {source, email, created}
-            if reporter_email:
-                self._emaildb.add_new_email({self.SOURCE_KEY: source, self.EMAIL_KEY: reporter_email})
+            if not self._db_impacted:
+                # When _db_impacted is True MongoDB is unavailable and normal DB operations cannot be performed
+                if reporter_email:
+                    self._emaildb.add_new_email({self.SOURCE_KEY: source, self.EMAIL_KEY: reporter_email})
 
             raise Exception(generic_error + " There is an existing open ticket.")
 
-        # Check if domain cap has been reached for the particular domain
-        if self._domain_cap_reached(args.get('type'), args.get('reporter'), args.get('sourceSubDomain'),
-                                    args.get('sourceDomainOrIp')):
-            self._logger.info("Domain cap reached for: {}".format(source))
-            raise Exception(generic_error + " There is an existing open ticket.")
+        if not self._db_impacted:
+            # Check if domain cap has been reached for the particular domain when DB is operational
+            if self._domain_cap_reached(args.get('type'), args.get('reporter'), args.get('sourceSubDomain'),
+                                        args.get('sourceDomainOrIp')):
+                self._logger.info("Domain cap reached for: {}".format(source))
+                raise Exception(generic_error + " There is an existing open ticket.")
 
         try:
             payload = self._datastore.create_post_payload(args)
@@ -118,14 +122,16 @@ class SNOWAPI(DataStore):
             }
 
         ticket_id = json_for_middleware.get('ticketId')
-        self._db.add_new_incident(ticket_id, json_for_middleware)
+        if not self._db_impacted:
+            # When _db_impacted is True MongoDB is unavailable and normal DB operations cannot be performed
+            self._db.add_new_incident(ticket_id, json_for_middleware)
 
-        # Adds acknowledgement email data into acknowledge_email collection in the DB.
-        # email data = {source, email, created}
-        if reporter_email:
-            self._emaildb.add_new_email({self.SOURCE_KEY: source, self.EMAIL_KEY: reporter_email})
+            # Adds acknowledgement email data into acknowledge_email collection in the DB.
+            # email data = {source, email, created}
+            if reporter_email:
+                self._emaildb.add_new_email({self.SOURCE_KEY: source, self.EMAIL_KEY: reporter_email})
 
-        self._send_to_middleware(json_for_middleware)
+            self._send_to_middleware(json_for_middleware)
 
         return ticket_id
 
@@ -135,6 +141,10 @@ class SNOWAPI(DataStore):
         :param args:
         :return:
         """
+        if self._db_impacted:
+            # When _db_impacted is True MongoDB is unavailable and normal DB update operations cannot be performed
+            raise Exception("This operation is currently unavailable")
+
         ticket_id = args.get('ticketId')
         generic_error = "Unable to update ticket {}.".format(ticket_id)
 

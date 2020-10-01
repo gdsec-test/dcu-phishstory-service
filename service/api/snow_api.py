@@ -18,7 +18,7 @@ class SNOWAPI(DataStore):
     SOURCE_KEY = 'source'
     USER_GENERATED_DOMAINS = {'joomla.com', 'wix.com', 'wixsite.com', 'htmlcomponentservice.com', 'sendgrid.net',
                               'mediafire.com', '16mb.com', 'gridserver.com', '000webhost.com', 'filesusr.com',
-                              'usrfiles.com', 'site123.me'}
+                              'usrfiles.com', 'site123.me', 'onelink.me', 'i-m.mx'}
     EXEMPT_REPORTERS = {'Sucuri': '198103515', 'DBP': '290638894'}
 
     def __init__(self, app_settings, celery):

@@ -19,7 +19,6 @@ class SNOWAPI(DataStore):
     USER_GENERATED_DOMAINS = {'joomla.com', 'wix.com', 'wixsite.com', 'htmlcomponentservice.com', 'sendgrid.net',
                               'mediafire.com', '16mb.com', 'gridserver.com', '000webhost.com', 'filesusr.com',
                               'usrfiles.com', 'site123.me', 'onelink.me', 'i-m.mx'}
-    EXEMPT_REPORTERS = {'Sucuri': '198103515', 'DBP': '290638894'}
 
     def __init__(self, app_settings, celery):
         self._logger = logging.getLogger(__name__)
@@ -30,6 +29,7 @@ class SNOWAPI(DataStore):
         self._celery = celery
         self._exempt_reporter_ids = set(self.EXEMPT_REPORTERS.values())
         self._db_impacted = app_settings.DATABASE_IMPACTED
+        self.EXEMPT_REPORTERS = app_settings.EXEMPT_REPORTERS
 
     # Logic defined in https://confluence.godaddy.com/display/ITSecurity/API+Redesign+Proposal
     def _domain_cap_reached(self, abuse_type, reporter_id, subdomain, domain):

@@ -24,6 +24,7 @@ class AppConfig(object):
 class ProductionAppConfig(AppConfig):
     SNOW_URL = 'https://godaddy.service-now.com/api/now/table'
     MIDDLEWARE_QUEUE = 'dcumiddleware'
+    EXEMPT_REPORTERS = {'Sucuri': '198103515', 'DBP': '290638894', 'PhishLabs': '129092584'}
 
     DB = 'phishstory'
     DB_HOST = '10.22.9.209'
@@ -36,6 +37,7 @@ class ProductionAppConfig(AppConfig):
 class OTEAppConfig(AppConfig):
     SNOW_URL = 'https://godaddytest.service-now.com/api/now/table'
     MIDDLEWARE_QUEUE = 'otedcumiddleware'
+    EXEMPT_REPORTERS = {'Sucuri': '1500070951', 'DBP': '1500495186', 'PhishLabs': '908557'}
 
     DB = 'otephishstory'
     DB_HOST = '10.22.9.209'
@@ -48,6 +50,7 @@ class OTEAppConfig(AppConfig):
 class DevelopmentAppConfig(AppConfig):
     SNOW_URL = 'https://godaddydev.service-now.com/api/now/table'
     MIDDLEWARE_QUEUE = 'devdcumiddleware'
+    EXEMPT_REPORTERS = {'dcuapi_test_dev': '1054985'}
 
     DB = 'devphishstory'
     DB_HOST = '10.22.188.208'
@@ -59,6 +62,7 @@ class DevelopmentAppConfig(AppConfig):
 
 class TestAppConfig(AppConfig):
     SNOW_URL = 'https://godaddydev.service-now.com/api/now/table'
+    EXEMPT_REPORTERS = {'Sucuri': '0', 'DBP': '0', 'PhishLabs': '0'}
 
     DBURL = 'mongodb://devuser:phishstory@10.22.188.208/devphishstory'
     DB = 'devphishstory'

@@ -27,9 +27,8 @@ class SNOWAPI(DataStore):
         self._db = PhishstoryMongo(app_settings)
         self._emaildb = EmailMongo(app_settings)
         self._celery = celery
-        self._exempt_reporter_ids = set(self.EXEMPT_REPORTERS.values())
+        self._exempt_reporter_ids = set(app_settings.EXEMPT_REPORTERS.values())
         self._db_impacted = app_settings.DATABASE_IMPACTED
-        self.EXEMPT_REPORTERS = app_settings.EXEMPT_REPORTERS
 
     # Logic defined in https://confluence.godaddy.com/display/ITSecurity/API+Redesign+Proposal
     def _domain_cap_reached(self, abuse_type, reporter_id, subdomain, domain):

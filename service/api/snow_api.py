@@ -14,8 +14,9 @@ from service.models.ticket_model import (MIDDLEWARE_MODEL, REPORTER_MODEL,
 
 class SNOWAPI(DataStore):
     TICKET_TABLE_NAME = 'u_dcu_ticket'  # SNOW table for Phishstory abuse reports
-    EMAIL_KEY = 'email'
-    SOURCE_KEY = 'source'
+    KEY_EMAIL = 'email'
+    KEY_METADATA = 'metadata'
+    KEY_SOURCE = 'source'
     USER_GENERATED_DOMAINS = {'joomla.com', 'wix.com', 'wixsite.com', 'htmlcomponentservice.com', 'sendgrid.net',
                               'mediafire.com', '16mb.com', 'gridserver.com', '000webhost.com', 'filesusr.com',
                               'usrfiles.com', 'site123.me', 'onelink.me', 'i-m.mx'}
@@ -66,7 +67,7 @@ class SNOWAPI(DataStore):
         :param args:
         :return:
         """
-        source = args.get(self.SOURCE_KEY)
+        source = args.get(self.KEY_SOURCE)
         generic_error = "Unable to create new ticket for {}.".format(source)
 
         if args.get('type') not in SUPPORTED_TYPES:
@@ -82,7 +83,7 @@ class SNOWAPI(DataStore):
             if not self._db_impacted:
                 # When _db_impacted is True MongoDB is unavailable and normal DB operations cannot be performed
                 if reporter_email:
-                    self._emaildb.add_new_email({self.SOURCE_KEY: source, self.EMAIL_KEY: reporter_email})
+                    self._emaildb.add_new_email({self.KEY_SOURCE: source, self.KEY_EMAIL: reporter_email})
 
             raise Exception(generic_error + " There is an existing open ticket.")
 
@@ -110,8 +111,9 @@ class SNOWAPI(DataStore):
         args['ticketId'] = snow_data['result']['u_number']
         json_for_middleware = {key: args[key] for key in MIDDLEWARE_MODEL}
 
-        if args.get('metadata'):
-            json_for_middleware['metadata'] = args['metadata']
+        # The metadata sub-document to contain BOTH iris shim keys and fraud_score key
+        if args.get(self.KEY_METADATA):
+            json_for_middleware[self.KEY_METADATA] = args[self.KEY_METADATA]
 
         # Checking for info field for evidence tracking purposes
         if args.get('info'):
@@ -128,7 +130,7 @@ class SNOWAPI(DataStore):
             # Adds acknowledgement email data into acknowledge_email collection in the DB.
             # email data = {source, email, created}
             if reporter_email:
-                self._emaildb.add_new_email({self.SOURCE_KEY: source, self.EMAIL_KEY: reporter_email})
+                self._emaildb.add_new_email({self.KEY_SOURCE: source, self.KEY_EMAIL: reporter_email})
 
             self._send_to_middleware(json_for_middleware)
 
@@ -256,7 +258,7 @@ class SNOWAPI(DataStore):
 
         try:
             url_args = self._datastore.create_url_parameters({'closed': 'false',
-                                                              self.SOURCE_KEY: urllib.quote_plus(source)})
+                                                              self.KEY_SOURCE: urllib.quote_plus(source)})
             query = '/{}{}'.format(self.TICKET_TABLE_NAME, url_args)
             response = self._datastore.get_request(query)
 

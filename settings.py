@@ -64,7 +64,7 @@ class TestAppConfig(AppConfig):
     SNOW_URL = 'https://godaddydev.service-now.com/api/now/table'
     EXEMPT_REPORTERS = {'Sucuri': '0', 'DBP': '0', 'PhishLabs': '0'}
 
-    DBURL = 'mongodb://devuser:phishstory@10.22.188.208/devphishstory'
+    DBURL = 'localhost'
     DB = 'devphishstory'
 
 

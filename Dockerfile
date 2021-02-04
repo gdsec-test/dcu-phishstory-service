@@ -27,7 +27,7 @@ RUN chown dcu:dcu -R /app
 # pip install from our private pips staged by our Makefile
 RUN for dep in dcdatabase; \
   do \
-  pip install --compile "/tmp/private_deps/$dep"; \
+  pip install --compile "/tmp/private_pips/$dep"; \
 done
 
 RUN pip install --compile /tmp && rm -rf /tmp/*

@@ -19,7 +19,7 @@ class SNOWAPI(DataStore):
     KEY_SOURCE = 'source'
     USER_GENERATED_DOMAINS = {'joomla.com', 'wix.com', 'wixsite.com', 'htmlcomponentservice.com', 'sendgrid.net',
                               'mediafire.com', '16mb.com', 'gridserver.com', '000webhost.com', 'filesusr.com',
-                              'usrfiles.com', 'site123.me', 'onelink.me', 'i-m.mx'}
+                              'usrfiles.com', 'site123.me', 'onelink.me', 'i-m.mx', 'tonohost.com', 'backblaze.com'}
 
     def __init__(self, app_settings, celery):
         self._logger = logging.getLogger(__name__)

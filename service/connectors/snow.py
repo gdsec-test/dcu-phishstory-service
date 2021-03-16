@@ -25,7 +25,7 @@ class SNOWHelper(object):
     get_headers = {'Accept': 'application/json'}
     post_headers = dict(list(get_headers.items()) + list({'Content-Type': 'application/json'}.items()))
 
-    default_timeout = 5  # Default timeout duration for all SNOW API calls
+    default_timeout = 10  # Default timeout duration for all SNOW API calls
 
     def __init__(self, app_settings):
         self._url = app_settings.SNOW_URL

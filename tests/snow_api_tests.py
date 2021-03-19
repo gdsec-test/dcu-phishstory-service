@@ -172,7 +172,7 @@ class TestSNOWAPI:
         get_request.return_value = MagicMock(status_code=codes.ok,
                                              headers=MagicMock(_store={'x-total-count': ('X-Total-Count', '2')}),
                                              content=json.dumps({'result': [{'u_number': '1'}, {'u_number': '2'}]}))
-        pagination = {'firstOffset': 0, 'total': 2, 'limit': 10, 'lastOffset': 0}
+        pagination = {'firstOffset': 0, 'total': 2, 'limit': 10, 'lastOffset': 2}
         assert_equal(self._api.get_tickets({'offset': 0, 'limit': 10}), {'ticketIds': ['1', '2'], 'pagination': pagination})
 
     # get_ticket_info tests

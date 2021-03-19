@@ -3,4 +3,5 @@
 ignore = E501
 exclude =
     # Don't check proto generated files as these shouldn't be edited
-    pb
+    pb,
+    .venv

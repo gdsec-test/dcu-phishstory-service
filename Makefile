@@ -6,7 +6,7 @@ COMMIT=
 BUILD_BRANCH=origin/master
 SHELL=/bin/bash
 
-PRIVATE_PIPS="git@github.secureserver.net:digital-crimes/dcdatabase.git;ff1ddc9bd07a380769bf54c0f5aa59793a5975c0"
+PRIVATE_PIPS="git@github.secureserver.net:digital-crimes/dcdatabase.git"
 
 all: env
 
@@ -23,7 +23,7 @@ flake8:
 .PHONY: isort
 isort:
 	@echo "----- Optimizing imports -----"
-	isort -rc --atomic --skip pb .
+	isort --atomic --skip pb --skip .venv .
 
 .PHONY: tools
 tools: flake8 isort

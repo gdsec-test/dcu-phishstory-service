@@ -1,9 +1,7 @@
 import abc
 
 
-class DataStore:
-    __metaclass__ = abc.ABCMeta
-
+class DataStore(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def create_ticket(self, args):
         """

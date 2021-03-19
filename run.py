@@ -54,7 +54,7 @@ class API(PhishstoryServicer):
                                                                       'reporter': data.get('reporter')}))
             ticket_id = self._api.create_ticket(data)
         except Exception as e:
-            context.set_details(e.message)
+            context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
 
         return CreateTicketResponse(ticketId=ticket_id) if ticket_id else CreateTicketResponse()
@@ -67,7 +67,7 @@ class API(PhishstoryServicer):
             data = protobuf_to_dict(request)
             ticket_info = self._api.get_ticket(data)
         except Exception as e:
-            context.set_details(e.message)
+            context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
 
         return dict_to_protobuf(GetTicketResponse, ticket_info, strict=False) if ticket_info else GetTicketResponse()
@@ -93,7 +93,7 @@ class API(PhishstoryServicer):
 
             ticket_ids = self._api.get_tickets(data)
         except Exception as e:
-            context.set_details(e.message)
+            context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
 
         return dict_to_protobuf(GetTicketsResponse, ticket_ids) if ticket_ids else GetTicketsResponse()
@@ -105,7 +105,7 @@ class API(PhishstoryServicer):
             data = protobuf_to_dict(request)
             self._api.update_ticket(data)
         except Exception as e:
-            context.set_details(e.message)
+            context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
 
         return UpdateTicketResponse()
@@ -117,7 +117,7 @@ class API(PhishstoryServicer):
         try:
             duplicate = self._api.check_duplicate(request.source)
         except Exception as e:
-            context.set_details(e.message)
+            context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)
 
         return CheckDuplicateResponse(duplicate=duplicate) if duplicate else CheckDuplicateResponse()

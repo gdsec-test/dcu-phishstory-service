@@ -52,9 +52,9 @@ make tools   # Runs both Flake8 and isort
 
 ## Running Locally
 In order to run Phishstory Service locally you must specify the following environment variables
-1. DB_PASS
+1. MONGO_URL
 2. SNOW_PASS
-3. BROKER_PASS
+3. BROKER_URL
 
 You may then run Phishstory Service via `python run.py`
 
@@ -68,18 +68,18 @@ class PhishstoryServiceClient:
     def get_ticket(self, ticketId):
         channel = grpc.insecure_channel(self._url)
         ready_future = grpc.channel_ready_future(channel)
-        stub = pb.phishstory_pb2_grpc.PhishstoryStub(channel)
+        stub = pb.phishstory_service_pb2_grpc.PhishstoryStub(channel)
 
         resp = None
         try:
             ready_future.result(timeout=5)
         except grpc.FutureTimeoutError:
-            print "Unable to connect to server"
+            print("Unable to connect to server")
         else:
             try:
-                resp = stub.GetTicket(pb.phishstory_pb2.GetTicketRequest(ticketId=ticketId), timeout=5)
+                resp = stub.GetTicket(pb.phishstory_service_pb2.GetTicketRequest(ticketId=ticketId), timeout=5)
             except Exception as e:
-                print "Unable to perform GetTicket on ticket {}".format(e.message)
+                print(f"Unable to perform GetTicket on ticket {e}")
         finally:
             return resp
 
@@ -87,5 +87,5 @@ class PhishstoryServiceClient:
 if __name__ == '__main__':
     client = PhishstoryServiceClient("localhost:50051")
     resp = client.get_ticket("DCU000289618")
-    print "Response: {}".format(resp)
+    print(f"Response: {resp}")
 ```

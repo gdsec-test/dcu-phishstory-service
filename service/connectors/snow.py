@@ -93,7 +93,7 @@ class SNOWHelper(object):
         created_end = '<='
         all_other = '='
 
-        for key, val in args.iteritems():
+        for key, val in args.items():
             operator = all_other
             if key == 'createdStart':
                 operator = created_start
@@ -111,7 +111,7 @@ class SNOWHelper(object):
         """
         params_list = {}
 
-        for key, val in args.iteritems():
+        for key, val in args.items():
             k = self.HTML2SNOW[key] if key in self.HTML2SNOW else key
             params_list[k] = val
         return json.dumps(params_list)
@@ -130,19 +130,19 @@ class SNOWHelper(object):
             :return:
         """
         # There is always a first link and its offset is zero
-        pagination = {'limit': limit, 'total': total_records, 'firstOffset': 0}
+        pagination = {'limit': int(limit), 'total': int(total_records), 'firstOffset': 0}
 
         # Check for previous links
         if offset:
             prev_starting_record = offset - limit
-            pagination['previousOffset'] = 0 if prev_starting_record < 0 else prev_starting_record
+            pagination['previousOffset'] = int(0 if prev_starting_record < 0 else prev_starting_record)
 
         next_starting_record = offset + limit
         last_starting_record = (total_records / limit) * limit
 
         # Check for next links
         if total_records > next_starting_record:
-            pagination['nextOffset'] = next_starting_record
+            pagination['nextOffset'] = int(next_starting_record)
 
         # Check for final paginated card in the deck
         ''' As an example of the code below, if there are 30 records, and the limit is 10, the last starting record is
@@ -152,6 +152,6 @@ class SNOWHelper(object):
             last_starting_record -= 1
 
         if next_starting_record < last_starting_record or total_records <= next_starting_record:
-            pagination['lastOffset'] = last_starting_record
+            pagination['lastOffset'] = int(last_starting_record)
 
         return pagination

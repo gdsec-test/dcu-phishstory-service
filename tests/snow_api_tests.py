@@ -42,12 +42,17 @@ class TestSNOWAPI:
 
     @patch.object(SNOWHelper, 'get_request')
     def test_check_duplicate_true(self, get_request):
-        get_request.return_value = MagicMock(content=json.dumps({'result': {'u_number': 'test-ticket'}}))
+        get_request.return_value = MagicMock(content=json.dumps({'result': [{'u_number': 'test-ticket'}]}))
         assert_true(self._api.check_duplicate('test-source'))
 
-    @patch.object(SNOWHelper, 'get_request', return_value=MagicMock(content=json.dumps({})))
+    @patch.object(SNOWHelper, 'get_request', return_value=MagicMock(content=json.dumps({'result': []})))
     def test_check_duplicate_false(self, get_request):
         assert_false(self._api.check_duplicate('test-source'))
+
+    @patch.object(SNOWHelper, 'get_request')
+    def test_check_duplicate_exclude(self, get_request):
+        get_request.return_value = MagicMock(content=json.dumps({'result': [{'u_number': 'test-ticket'}]}))
+        assert_false(self._api.check_duplicate('test-source', 'test-ticket'))
 
     @patch.object(SNOWHelper, 'get_request', side_effect=Exception())
     def test_check_duplicate_exception(self, get_request):

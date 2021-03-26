@@ -36,7 +36,7 @@ test:
 .PHONY: testcov
 testcov:
 	@echo "----- Running tests with coverage -----"
-	nosetests tests --with-coverage --cover-erase --cover-package=service
+	nosetests tests --with-coverage --cover-erase --cover-package=service --cover-xml
 
 
 .PHONY: prep

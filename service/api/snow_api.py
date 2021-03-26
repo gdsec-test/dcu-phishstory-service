@@ -76,8 +76,11 @@ class SNOWAPI(DataStore):
         # reporterEmail should NOT be propagated to SNOW, so we delete the field from args
         reporter_email = args.pop('reporterEmail', None)
 
+        # Need metadata from request.
+        reclassified_from = args.get('metadata', {}).get('reclassified_from', None)
+
         # Check to see if the abuse report has been previously submitted for this source
-        if self.check_duplicate(source):
+        if self.check_duplicate(source, reclassified_from):
             # Adds acknowledgement email data into acknowledge_email collection in the DB if DB is available
             # email data = {source, email, created}
             if not self._db_impacted:
@@ -247,10 +250,12 @@ class SNOWAPI(DataStore):
         ticket_data['u_closed'] = True if 'true' in ticket_data['u_closed'].lower() else False
         return {v: ticket_data[k] for k, v in REPORTER_MODEL.items()}
 
-    def check_duplicate(self, source):
+    def check_duplicate(self, source, reclassified_from=None):
         """
         Determines whether or not there is an open ticket with an identical source to the one provided.
-        :param source:
+        :param source: The source of the incoming duplicate check.
+        :param reclassified_from: An optional parameter specifying a ticket to exclude from
+                                  the duplicate check. Used for the reclassify workflow.
         :return:
         """
         if not source:
@@ -261,13 +266,15 @@ class SNOWAPI(DataStore):
                                                               self.KEY_SOURCE: quote_plus(source)})
             query = '/{}{}'.format(self.TICKET_TABLE_NAME, url_args)
             response = self._datastore.get_request(query)
-
             snow_data = json.loads(response.content)
+            results = snow_data.get('result', [])
+            results = [d for d in results if d.get('u_number') != reclassified_from]
+            return len(results) > 0
         except Exception as e:
             self._logger.error('Unable to determine if {} is a duplicate {}.'.format(source, e))
             raise Exception('Unable to complete your request at this time.')
 
-        return bool(snow_data.get('result'))
+        return False
 
     def _get_sys_id(self, ticket_id):
         """

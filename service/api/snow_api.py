@@ -16,6 +16,7 @@ class SNOWAPI(DataStore):
     TICKET_TABLE_NAME = 'u_dcu_ticket'  # SNOW table for Phishstory abuse reports
     KEY_EMAIL = 'email'
     KEY_METADATA = 'metadata'
+    KEY_REPORTER = 'reporter'
     KEY_SOURCE = 'source'
     USER_GENERATED_DOMAINS = {'joomla.com', 'wix.com', 'wixsite.com', 'htmlcomponentservice.com', 'sendgrid.net',
                               'mediafire.com', '16mb.com', 'gridserver.com', '000webhost.com', 'filesusr.com',
@@ -30,6 +31,7 @@ class SNOWAPI(DataStore):
         self._celery = celery
         self._exempt_reporter_ids = set(app_settings.EXEMPT_REPORTERS.values())
         self._db_impacted = app_settings.DATABASE_IMPACTED
+        self._trusted_reporters = app_settings.TRUSTED_REPORTERS
 
     # Logic defined in https://confluence.godaddy.com/display/ITSecurity/API+Redesign+Proposal
     def _domain_cap_reached(self, abuse_type, reporter_id, subdomain, domain):
@@ -60,7 +62,7 @@ class SNOWAPI(DataStore):
         incidents = self._db.find_incidents(query=query, limit=5)
         return len(incidents) == 5
 
-    def create_ticket(self, args):
+    def create_ticket(self, args: dict) -> str:
         """
         Creates a ticket for the provided abuse report in SNOW and MongoDB. Passes filtered arguments to the
         Middleware for further processing and enrichment.
@@ -69,6 +71,7 @@ class SNOWAPI(DataStore):
         """
         source = args.get(self.KEY_SOURCE)
         generic_error = 'Unable to create new ticket for {}.'.format(source)
+        _is_trusted_reporter = args.get(self.KEY_REPORTER) in self._trusted_reporters
 
         if args.get('type') not in SUPPORTED_TYPES:
             raise Exception(generic_error + ' Unsupported type {}.'.format(args.get('type')))
@@ -80,19 +83,24 @@ class SNOWAPI(DataStore):
         reclassified_from = args.get('metadata', {}).get('reclassified_from', None)
 
         # Check to see if the abuse report has been previously submitted for this source
-        if self.check_duplicate(source, reclassified_from):
+        _is_duplicate_ticket, _duplicate_ticket_ids = self.check_duplicate(source, reclassified_from)
+        if _is_duplicate_ticket:
             # Adds acknowledgement email data into acknowledge_email collection in the DB if DB is available
             # email data = {source, email, created}
             if not self._db_impacted:
                 # When _db_impacted is True MongoDB is unavailable and normal DB operations cannot be performed
                 if reporter_email:
                     self._emaildb.add_new_email({self.KEY_SOURCE: source, self.KEY_EMAIL: reporter_email})
+                # If the original ticket came from a trusted reporter, set an abuse_verified field
+                elif _is_trusted_reporter and _duplicate_ticket_ids:
+                    for _ticket_id in _duplicate_ticket_ids:
+                        self._db.update_incident(_ticket_id, {'abuse_verified': True})
 
             raise Exception(generic_error + ' There is an existing open ticket.')
 
         if not self._db_impacted:
             # Check if domain cap has been reached for the particular domain when DB is operational
-            if self._domain_cap_reached(args.get('type'), args.get('reporter'), args.get('sourceSubDomain'),
+            if self._domain_cap_reached(args.get('type'), args.get(self.KEY_REPORTER), args.get('sourceSubDomain'),
                                         args.get('sourceDomainOrIp')):
                 self._logger.info('Domain cap reached for: {}'.format(source))
                 raise Exception(generic_error + ' There is an existing open ticket.')
@@ -111,22 +119,27 @@ class SNOWAPI(DataStore):
             raise Exception(generic_error)
 
         # SNOW ticket created successfully
-        args['ticketId'] = snow_data['result']['u_number']
-        json_for_middleware = {key: args[key] for key in MIDDLEWARE_MODEL}
 
-        # The metadata sub-document to contain BOTH iris shim keys and fraud_score key
-        if args.get(self.KEY_METADATA):
-            json_for_middleware[self.KEY_METADATA] = args[self.KEY_METADATA]
-
-        # Checking for info field for evidence tracking purposes
-        if args.get('info'):
-            json_for_middleware['evidence'] = {
-                'iris': args['info'] == 'IRIS',
-                'snow': args['info'] != 'IRIS'
-            }
-
-        ticket_id = json_for_middleware.get('ticketId')
         if not self._db_impacted:
+            args['ticketId'] = snow_data['result']['u_number']
+            json_for_middleware = {key: args[key] for key in MIDDLEWARE_MODEL}
+
+            # The metadata sub-document to contain BOTH iris shim keys and fraud_score key
+            if args.get(self.KEY_METADATA):
+                json_for_middleware[self.KEY_METADATA] = args[self.KEY_METADATA]
+
+            # Checking for info field for evidence tracking purposes
+            if args.get('info'):
+                json_for_middleware['evidence'] = {
+                    'iris': args['info'] == 'IRIS',
+                    'snow': args['info'] != 'IRIS'
+                }
+
+            if _is_trusted_reporter:
+                json_for_middleware['abuse_verified'] = True
+
+            ticket_id = json_for_middleware.get('ticketId')
+
             # When _db_impacted is True MongoDB is unavailable and normal DB operations cannot be performed
             self._db.add_new_incident(ticket_id, json_for_middleware)
 
@@ -137,7 +150,7 @@ class SNOWAPI(DataStore):
 
             self._send_to_middleware(json_for_middleware)
 
-        return ticket_id
+        return snow_data['result']['u_number']
 
     def update_ticket(self, args):
         """
@@ -227,7 +240,7 @@ class SNOWAPI(DataStore):
         ticket_id = args.get('ticketId')
         generic_error = 'Unable to retrieve ticket information for {}.'.format(ticket_id)
 
-        ext_user_clause = '&u_reporter=' + args.get('reporter') if args.get('reporter') else ''
+        ext_user_clause = '&u_reporter=' + args.get(self.KEY_REPORTER) if args.get(self.KEY_REPORTER) else ''
         try:
             query = '/{}?sysparam_limit=1&u_number={}{}'.format(self.TICKET_TABLE_NAME, ticket_id, ext_user_clause)
             response = self._datastore.get_request(query)
@@ -250,7 +263,7 @@ class SNOWAPI(DataStore):
         ticket_data['u_closed'] = True if 'true' in ticket_data['u_closed'].lower() else False
         return {v: ticket_data[k] for k, v in REPORTER_MODEL.items()}
 
-    def check_duplicate(self, source, reclassified_from=None):
+    def check_duplicate(self, source: str, reclassified_from: str = None) -> tuple:
         """
         Determines whether or not there is an open ticket with an identical source to the one provided.
         :param source: The source of the incoming duplicate check.
@@ -268,13 +281,11 @@ class SNOWAPI(DataStore):
             response = self._datastore.get_request(query)
             snow_data = json.loads(response.content)
             results = snow_data.get('result', [])
-            results = [d for d in results if d.get('u_number') != reclassified_from]
-            return len(results) > 0
+            _duplicate_ticket_ids = [d.get('u_number') for d in results if d.get('u_number') != reclassified_from]
+            return len(_duplicate_ticket_ids) > 0, _duplicate_ticket_ids
         except Exception as e:
             self._logger.error('Unable to determine if {} is a duplicate {}.'.format(source, e))
             raise Exception('Unable to complete your request at this time.')
-
-        return False
 
     def _get_sys_id(self, ticket_id):
         """

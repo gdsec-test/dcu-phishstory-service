@@ -115,7 +115,7 @@ class API(PhishstoryServicer):
         duplicate = None
 
         try:
-            duplicate = self._api.check_duplicate(request.source)
+            duplicate, _ = self._api.check_duplicate(request.source)
         except Exception as e:
             context.set_details(str(e))
             context.set_code(grpc.StatusCode.INTERNAL)

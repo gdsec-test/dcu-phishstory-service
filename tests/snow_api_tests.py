@@ -400,3 +400,20 @@ class TestSNOWAPI:
         _send_to_middleware.assert_called()
         post_request.assert_called()
         check_duplicate.assert_called()
+
+    @patch.object(SNOWAPI, '_domain_cap_reached', return_value=None)
+    @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
+    @patch.object(SNOWHelper, 'post_request')
+    @patch.object(SNOWAPI, 'check_duplicate', return_value=(False, []))
+    def test_bypass_domain_cap_trusted_reporter(self, check_duplicate, post_request, _send_to_middleware, _domain_cap):
+        post_request.return_value = MagicMock(status_code=codes.created,
+                                              content=json.dumps({'result': {'u_number': 'test-ticket'}}))
+        data = {'type': 'PHISHING', 'metadata': {'test': 'test'}, 'source': 'test-source',
+                'sourceDomainOrIp': '', 'sourceSubDomain': '', 'proxy': '',
+                'reporter': 'threat-hunting-reporter-id', 'target': '',
+                'info': 'EMAIL HEADERS: Header Info - EMAIL CONTENT: Body'}
+        assert_equal(self._api.create_ticket(data), 'test-ticket')
+        _domain_cap.assert_not_called()
+        _send_to_middleware.assert_called()
+        post_request.assert_called()
+        check_duplicate.assert_called()

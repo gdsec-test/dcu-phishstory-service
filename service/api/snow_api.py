@@ -99,11 +99,13 @@ class SNOWAPI(DataStore):
             raise Exception(generic_error + ' There is an existing open ticket.')
 
         if not self._db_impacted:
-            # Check if domain cap has been reached for the particular domain when DB is operational
-            if self._domain_cap_reached(args.get('type'), args.get(self.KEY_REPORTER), args.get('sourceSubDomain'),
-                                        args.get('sourceDomainOrIp')):
-                self._logger.info('Domain cap reached for: {}'.format(source))
-                raise Exception(generic_error + ' There is an existing open ticket.')
+            # Bypass domain cap for trusted reporters
+            if not _is_trusted_reporter:
+                # Check if domain cap has been reached for the particular domain when DB is operational
+                if self._domain_cap_reached(args.get('type'), args.get(self.KEY_REPORTER), args.get('sourceSubDomain'),
+                                            args.get('sourceDomainOrIp')):
+                    self._logger.info('Domain cap reached for: {}'.format(source))
+                    raise Exception(generic_error + ' There is an existing open ticket.')
 
         try:
             payload = self._datastore.create_post_payload(args)

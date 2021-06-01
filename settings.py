@@ -24,7 +24,7 @@ class AppConfig(object):
 class ProductionAppConfig(AppConfig):
     SNOW_URL = 'https://godaddy.service-now.com/api/now/table'
     MIDDLEWARE_QUEUE = 'dcumiddleware'
-    EXEMPT_REPORTERS = {'Sucuri': '198103515', 'DBP': '290638894', 'PhishLabs': '129092584'}
+    EXEMPT_REPORTERS = {'Sucuri': '395146638', 'DBP': '290638894', 'PhishLabs': '129092584'}
     TRUSTED_REPORTERS = {'375006196'}  # Threat Hunting
 
     def __init__(self):
@@ -34,7 +34,7 @@ class ProductionAppConfig(AppConfig):
 class OTEAppConfig(AppConfig):
     SNOW_URL = 'https://godaddytest.service-now.com/api/now/table'
     MIDDLEWARE_QUEUE = 'otedcumiddleware'
-    EXEMPT_REPORTERS = {'Sucuri': '1500070951', 'DBP': '1500495186', 'PhishLabs': '908557'}
+    EXEMPT_REPORTERS = {'Sucuri': '1500631816', 'DBP': '1500495186', 'PhishLabs': '908557'}
     TRUSTED_REPORTERS = {'1500602948'}  # Threat Hunting
 
     def __init__(self):

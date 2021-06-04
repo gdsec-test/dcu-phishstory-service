@@ -79,11 +79,11 @@ class SNOWAPI(DataStore):
         :return:
         """
         source = args.get(self.KEY_SOURCE)
-        generic_error = 'Unable to create new ticket for {}.'.format(source)
+        generic_error = f'Unable to create new ticket for {source}.'
         _is_trusted_reporter = args.get(self.KEY_REPORTER) in self._trusted_reporters
 
         if args.get(self.KEY_TYPE) not in SUPPORTED_TYPES:
-            raise Exception(generic_error + ' Unsupported type {}.'.format(args.get(self.KEY_TYPE)))
+            raise Exception(f'{generic_error} Unsupported type {args.get(self.KEY_TYPE)}.')
 
         # reporterEmail should NOT be propagated to SNOW, so we delete the field from args
         reporter_email = args.pop('reporterEmail', None)
@@ -105,7 +105,7 @@ class SNOWAPI(DataStore):
                     for _ticket_id in _duplicate_ticket_ids:
                         self._db.update_incident(_ticket_id, {self.KEY_ABUSE_VERIFIED: True})
 
-            raise Exception(generic_error + ' There is an existing open ticket.')
+            raise Exception(f'{generic_error} There is an existing open ticket.')
 
         if not self._db_impacted:
             # Bypass domain cap for trusted reporters
@@ -113,20 +113,20 @@ class SNOWAPI(DataStore):
                 # Check if domain cap has been reached for the particular domain when DB is operational
                 if self._domain_cap_reached(args.get(self.KEY_TYPE), args.get(self.KEY_REPORTER),
                                             args.get(self.KEY_SOURCE_SUBDOMAIN), args.get('sourceDomainOrIp')):
-                    self._logger.info('Domain cap reached for: {}'.format(source))
-                    raise Exception(generic_error + ' There is an existing open ticket.')
+                    self._logger.info(f'Domain cap reached for: {source}')
+                    raise Exception(f'{generic_error} There is an existing open ticket.')
 
         try:
             payload = self._datastore.create_post_payload(args)
-            response = self._datastore.post_request('/{}'.format(self.TICKET_TABLE_NAME), payload)
+            response = self._datastore.post_request(f'/{self.TICKET_TABLE_NAME}', payload)
 
             snow_data = json.loads(response.content)
         except Exception as e:
-            self._logger.error('Error creating ticket {} {}.'.format(source, e))
+            self._logger.error(f'Error creating ticket {source} {e}.')
             raise Exception(generic_error)
 
         if response.status_code != codes.created:
-            self._logger.error('Expected status code {} got status {}.'.format(codes.ok, response.status_code))
+            self._logger.error(f'Expected status code {codes.ok} got status {response.status_code}.')
             raise Exception(generic_error)
 
         # SNOW ticket created successfully
@@ -174,14 +174,13 @@ class SNOWAPI(DataStore):
             raise Exception('This operation is currently unavailable')
 
         ticket_id = args.get(self.KEY_TICKET_ID)
-        generic_error = 'Unable to update ticket {}.'.format(ticket_id)
+        generic_error = f'Unable to update ticket {ticket_id}.'
 
         if args.get(self.KEY_CLOSED) and not args.get(self.KEY_CLOSE_REASON):
-            raise Exception(generic_error + " close_reason not provided.")
+            raise Exception(f'{generic_error} close_reason not provided.')
 
         if args.get(self.KEY_CLOSED) and args.get(self.KEY_CLOSE_REASON) not in SUPPORTED_CLOSURES:
-            raise Exception(generic_error +
-                            ' Invalid close reason provided {}.'.format(args.get(self.KEY_CLOSE_REASON)))
+            raise Exception(f'{generic_error} Invalid close reason provided {args.get(self.KEY_CLOSE_REASON)}.')
 
         sys_id = self._get_sys_id(ticket_id)
         if not sys_id:
@@ -189,19 +188,18 @@ class SNOWAPI(DataStore):
 
         try:
             payload = self._datastore.create_post_payload(args)
-            query = '/{}/{}'.format(self.TICKET_TABLE_NAME, sys_id)
+            query = f'/{self.TICKET_TABLE_NAME}/{sys_id}'
             response = self._datastore.patch_request(query, payload)
         except Exception as e:
-            self._logger.error(generic_error + " {}".format(e))
+            self._logger.error(f'{generic_error} {e}')
             raise Exception(generic_error)
 
         if response.status_code != codes.ok:
-            self._logger.error('Expected status code {} got status {}.'.format(codes.ok, response.status_code))
+            self._logger.error(f'Expected status code {codes.ok} got status {response.status_code}.')
             raise Exception(generic_error)
 
         if args.get(self.KEY_CLOSED):
-            self._logger.info('Closing ticket {} with close_reason {}.'.format(ticket_id,
-                                                                               args.get(self.KEY_CLOSE_REASON)))
+            self._logger.info(f'Closing ticket {ticket_id} with close_reason {args.get(self.KEY_CLOSE_REASON)}.')
             self._db.close_incident(ticket_id, dict(close_reason=args.get(self.KEY_CLOSE_REASON)))
 
     def get_tickets(self, args):
@@ -210,7 +208,7 @@ class SNOWAPI(DataStore):
         :param args:
         :return:
         """
-        generic_error = 'Unable to retrieve tickets matching {}.'.format(args)
+        generic_error = f'Unable to retrieve tickets matching {args}.'
         args['sysparm_fields'] = self.KEY_U_NUMBER
 
         try:
@@ -218,16 +216,16 @@ class SNOWAPI(DataStore):
             created_end = args.pop('createdEnd', None)
             param_query = self._datastore.create_param_query(created_start, created_end)
             url_args = self._datastore.create_url_parameters(args) + param_query
-            query = '/{}{}'.format(self.TICKET_TABLE_NAME, url_args)
+            query = f'/{self.TICKET_TABLE_NAME}{url_args}'
             response = self._datastore.get_request(query)
 
             snow_data = json.loads(response.content)
         except Exception as e:
-            self._logger.error(generic_error + ' {}.'.format(e))
+            self._logger.error(f'{generic_error} {e}.')
             raise Exception(generic_error)
 
         if response.status_code != codes.ok:
-            self._logger.info('Expected status code {} got status {}.'.format(codes.ok, response.status_code))
+            self._logger.info(f'Expected status code {codes.ok} got status {response.status_code}.')
             raise Exception(generic_error)
 
         if not snow_data.get(self.KEY_RESULT):
@@ -251,20 +249,20 @@ class SNOWAPI(DataStore):
         :return:
         """
         ticket_id = args.get(self.KEY_TICKET_ID)
-        generic_error = 'Unable to retrieve ticket information for {}.'.format(ticket_id)
+        generic_error = f'Unable to retrieve ticket information for {ticket_id}.'
 
         ext_user_clause = '&u_reporter=' + args.get(self.KEY_REPORTER) if args.get(self.KEY_REPORTER) else ''
         try:
-            query = '/{}?sysparam_limit=1&u_number={}{}'.format(self.TICKET_TABLE_NAME, ticket_id, ext_user_clause)
+            query = f'/{self.TICKET_TABLE_NAME}?sysparam_limit=1&u_number={ticket_id}{ext_user_clause}'
             response = self._datastore.get_request(query)
 
             snow_data = json.loads(response.content)
         except Exception as e:
-            self._logger.error(generic_error + " {}".format(e))
+            self._logger.error(f'{generic_error} {e}')
             raise Exception(generic_error)
 
         if response.status_code != codes.ok:
-            self._logger.error('Expected status code {} got {}.'.format(codes.ok, response.status_code))
+            self._logger.error(f'Expected status code {codes.ok} got {response.status_code}.')
             raise Exception(generic_error)
 
         if not snow_data.get(self.KEY_RESULT):
@@ -290,7 +288,7 @@ class SNOWAPI(DataStore):
         try:
             url_args = self._datastore.create_url_parameters({self.KEY_CLOSED: 'false',
                                                               self.KEY_SOURCE: quote_plus(source)})
-            query = '/{}{}'.format(self.TICKET_TABLE_NAME, url_args)
+            query = f'/{self.TICKET_TABLE_NAME}{url_args}'
             response = self._datastore.get_request(query)
             snow_data = json.loads(response.content)
             results = snow_data.get(self.KEY_RESULT, [])
@@ -299,7 +297,7 @@ class SNOWAPI(DataStore):
             ]
             return len(_duplicate_ticket_ids) > 0, _duplicate_ticket_ids
         except Exception as e:
-            self._logger.error('Unable to determine if {} is a duplicate {}.'.format(source, e))
+            self._logger.error(f'Unable to determine if {source} is a duplicate {e}.')
             raise Exception('Unable to complete your request at this time.')
 
     def _get_sys_id(self, ticket_id):
@@ -309,24 +307,24 @@ class SNOWAPI(DataStore):
         :return:
         """
         try:
-            query = '/{}?u_number={}'.format(self.TICKET_TABLE_NAME, ticket_id)
+            query = f'/{self.TICKET_TABLE_NAME}?u_number={ticket_id}'
             response = self._datastore.get_request(query)
 
             snow_data = json.loads(response.content)
         except Exception as e:
-            self._logger.error('Unable to retrieve SysId for ticket {} {}.'.format(ticket_id, e))
+            self._logger.error(f'Unable to retrieve SysId for ticket {ticket_id} {e}.')
             return
 
         if response.status_code != codes.ok:
-            self._logger.error('Expected status code {} got {}.'.format(codes.ok, response.status_code))
+            self._logger.error(f'Expected status code {codes.ok} got {response.status_code}.')
             return
 
         if self.KEY_RESULT not in snow_data:
-            self._logger.error('"result" does not exist in snow_data {}.'.format(snow_data))
+            self._logger.error(f'"result" does not exist in snow_data {snow_data}.')
             return
 
         if not snow_data.get(self.KEY_RESULT):
-            self._logger.error('No records found for {}.'.format(ticket_id))
+            self._logger.error(f'No records found for {ticket_id}.')
             return
 
         return snow_data[self.KEY_RESULT][0]['sys_id']
@@ -338,7 +336,7 @@ class SNOWAPI(DataStore):
         :return:
         """
         try:
-            self._logger.info('Sending payload to Middleware {}.'.format(payload))
+            self._logger.info(f'Sending payload to Middleware {payload}.')
             self._celery.send_task('run.process', (payload,))
         except Exception as e:
-            self._logger.error('Unable to send payload to Middleware {} {}.'.format(payload, e))
+            self._logger.error(f'Unable to send payload to Middleware {payload} {e}.')

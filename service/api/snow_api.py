@@ -14,10 +14,19 @@ from service.models.ticket_model import (MIDDLEWARE_MODEL, REPORTER_MODEL,
 
 class SNOWAPI(DataStore):
     TICKET_TABLE_NAME = 'u_dcu_ticket'  # SNOW table for Phishstory abuse reports
+    KEY_ABUSE_VERIFIED = 'abuseVerified'
+    KEY_CLOSED = 'closed'
+    KEY_CLOSE_REASON = 'close_reason'
     KEY_EMAIL = 'email'
+    KEY_INFO = 'info'
     KEY_METADATA = 'metadata'
     KEY_REPORTER = 'reporter'
+    KEY_RESULT = 'result'
     KEY_SOURCE = 'source'
+    KEY_SOURCE_SUBDOMAIN = 'sourceSubDomain'
+    KEY_TICKET_ID = 'ticketId'
+    KEY_TYPE = 'type'
+    KEY_U_NUMBER = 'u_number'
     USER_GENERATED_DOMAINS = {'joomla.com', 'wix.com', 'wixsite.com', 'htmlcomponentservice.com', 'sendgrid.net',
                               'mediafire.com', '16mb.com', 'gridserver.com', '000webhost.com', 'filesusr.com',
                               'usrfiles.com', 'site123.me', 'onelink.me', 'i-m.mx', 'tonohost.com', 'backblaze.com'}
@@ -44,17 +53,17 @@ class SNOWAPI(DataStore):
         if not (subdomain or domain):
             return False
 
-        query = {'phishstory_status': {'$ne': 'CLOSED'}, 'type': abuse_type}
+        query = {'phishstory_status': {'$ne': 'CLOSED'}, self.KEY_TYPE: abuse_type}
 
         # Prioritize subdomains as we need to cap per subdomain.
         if subdomain:
             # Treating subdomains that start with www the same compared to the ones that don't start with www.
             # For instance www.abc.com and abc.com are the same.
             if subdomain.startswith('www.') and len(subdomain) > 4:
-                query['$or'] = [{'sourceSubDomain': subdomain},
-                                {'sourceSubDomain': subdomain[4:]}]
+                query['$or'] = [{self.KEY_SOURCE_SUBDOMAIN: subdomain},
+                                {self.KEY_SOURCE_SUBDOMAIN: subdomain[4:]}]
             else:
-                query['sourceSubDomain'] = subdomain
+                query[self.KEY_SOURCE_SUBDOMAIN] = subdomain
 
         else:
             query['sourceDomainOrIp'] = domain
@@ -73,8 +82,8 @@ class SNOWAPI(DataStore):
         generic_error = 'Unable to create new ticket for {}.'.format(source)
         _is_trusted_reporter = args.get(self.KEY_REPORTER) in self._trusted_reporters
 
-        if args.get('type') not in SUPPORTED_TYPES:
-            raise Exception(generic_error + ' Unsupported type {}.'.format(args.get('type')))
+        if args.get(self.KEY_TYPE) not in SUPPORTED_TYPES:
+            raise Exception(generic_error + ' Unsupported type {}.'.format(args.get(self.KEY_TYPE)))
 
         # reporterEmail should NOT be propagated to SNOW, so we delete the field from args
         reporter_email = args.pop('reporterEmail', None)
@@ -91,10 +100,10 @@ class SNOWAPI(DataStore):
                 # When _db_impacted is True MongoDB is unavailable and normal DB operations cannot be performed
                 if reporter_email:
                     self._emaildb.add_new_email({self.KEY_SOURCE: source, self.KEY_EMAIL: reporter_email})
-                # If the original ticket came from a trusted reporter, set an abuse_verified field
+                # If the original ticket came from a trusted reporter, set an abuseVerified field
                 elif _is_trusted_reporter and _duplicate_ticket_ids:
                     for _ticket_id in _duplicate_ticket_ids:
-                        self._db.update_incident(_ticket_id, {'abuse_verified': True})
+                        self._db.update_incident(_ticket_id, {self.KEY_ABUSE_VERIFIED: True})
 
             raise Exception(generic_error + ' There is an existing open ticket.')
 
@@ -102,8 +111,8 @@ class SNOWAPI(DataStore):
             # Bypass domain cap for trusted reporters
             if not _is_trusted_reporter:
                 # Check if domain cap has been reached for the particular domain when DB is operational
-                if self._domain_cap_reached(args.get('type'), args.get(self.KEY_REPORTER), args.get('sourceSubDomain'),
-                                            args.get('sourceDomainOrIp')):
+                if self._domain_cap_reached(args.get(self.KEY_TYPE), args.get(self.KEY_REPORTER),
+                                            args.get(self.KEY_SOURCE_SUBDOMAIN), args.get('sourceDomainOrIp')):
                     self._logger.info('Domain cap reached for: {}'.format(source))
                     raise Exception(generic_error + ' There is an existing open ticket.')
 
@@ -123,7 +132,7 @@ class SNOWAPI(DataStore):
         # SNOW ticket created successfully
 
         if not self._db_impacted:
-            args['ticketId'] = snow_data['result']['u_number']
+            args[self.KEY_TICKET_ID] = snow_data[self.KEY_RESULT][self.KEY_U_NUMBER]
             json_for_middleware = {key: args[key] for key in MIDDLEWARE_MODEL}
 
             # The metadata sub-document to contain BOTH iris shim keys and fraud_score key
@@ -131,16 +140,16 @@ class SNOWAPI(DataStore):
                 json_for_middleware[self.KEY_METADATA] = args[self.KEY_METADATA]
 
             # Checking for info field for evidence tracking purposes
-            if args.get('info'):
+            if args.get(self.KEY_INFO):
                 json_for_middleware['evidence'] = {
-                    'iris': args['info'] == 'IRIS',
-                    'snow': args['info'] != 'IRIS'
+                    'iris': args[self.KEY_INFO] == 'IRIS',
+                    'snow': args[self.KEY_INFO] != 'IRIS'
                 }
 
             if _is_trusted_reporter:
-                json_for_middleware['abuse_verified'] = True
+                json_for_middleware[self.KEY_ABUSE_VERIFIED] = True
 
-            ticket_id = json_for_middleware.get('ticketId')
+            ticket_id = json_for_middleware.get(self.KEY_TICKET_ID)
 
             # When _db_impacted is True MongoDB is unavailable and normal DB operations cannot be performed
             self._db.add_new_incident(ticket_id, json_for_middleware)
@@ -152,7 +161,7 @@ class SNOWAPI(DataStore):
 
             self._send_to_middleware(json_for_middleware)
 
-        return snow_data['result']['u_number']
+        return snow_data[self.KEY_RESULT][self.KEY_U_NUMBER]
 
     def update_ticket(self, args):
         """
@@ -164,14 +173,15 @@ class SNOWAPI(DataStore):
             # When _db_impacted is True MongoDB is unavailable and normal DB update operations cannot be performed
             raise Exception('This operation is currently unavailable')
 
-        ticket_id = args.get('ticketId')
+        ticket_id = args.get(self.KEY_TICKET_ID)
         generic_error = 'Unable to update ticket {}.'.format(ticket_id)
 
-        if args.get('closed') and not args.get('close_reason'):
+        if args.get(self.KEY_CLOSED) and not args.get(self.KEY_CLOSE_REASON):
             raise Exception(generic_error + " close_reason not provided.")
 
-        if args.get('closed') and args.get('close_reason') not in SUPPORTED_CLOSURES:
-            raise Exception(generic_error + ' Invalid close reason provided {}.'.format(args.get('close_reason')))
+        if args.get(self.KEY_CLOSED) and args.get(self.KEY_CLOSE_REASON) not in SUPPORTED_CLOSURES:
+            raise Exception(generic_error +
+                            ' Invalid close reason provided {}.'.format(args.get(self.KEY_CLOSE_REASON)))
 
         sys_id = self._get_sys_id(ticket_id)
         if not sys_id:
@@ -189,9 +199,10 @@ class SNOWAPI(DataStore):
             self._logger.error('Expected status code {} got status {}.'.format(codes.ok, response.status_code))
             raise Exception(generic_error)
 
-        if args.get('closed'):
-            self._logger.info('Closing ticket {} with close_reason {}.'.format(args['ticketId'], args['close_reason']))
-            self._db.close_incident(args['ticketId'], dict(close_reason=args.get('close_reason')))
+        if args.get(self.KEY_CLOSED):
+            self._logger.info('Closing ticket {} with close_reason {}.'.format(ticket_id,
+                                                                               args.get(self.KEY_CLOSE_REASON)))
+            self._db.close_incident(ticket_id, dict(close_reason=args.get(self.KEY_CLOSE_REASON)))
 
     def get_tickets(self, args):
         """
@@ -200,7 +211,7 @@ class SNOWAPI(DataStore):
         :return:
         """
         generic_error = 'Unable to retrieve tickets matching {}.'.format(args)
-        args['sysparm_fields'] = 'u_number'
+        args['sysparm_fields'] = self.KEY_U_NUMBER
 
         try:
             created_start = args.pop('createdStart', None)
@@ -219,7 +230,7 @@ class SNOWAPI(DataStore):
             self._logger.info('Expected status code {} got status {}.'.format(codes.ok, response.status_code))
             raise Exception(generic_error)
 
-        if not snow_data.get('result'):
+        if not snow_data.get(self.KEY_RESULT):
             raise Exception(generic_error)
 
         ticket_dict = {}
@@ -230,7 +241,7 @@ class SNOWAPI(DataStore):
             ticket_dict['pagination'] = SNOWHelper.create_pagination_links(args['offset'], args['limit'],
                                                                            total_records)
 
-        ticket_dict['ticketIds'] = [ticket.get('u_number') for ticket in snow_data.get('result', [])]
+        ticket_dict['ticketIds'] = [ticket.get(self.KEY_U_NUMBER) for ticket in snow_data.get(self.KEY_RESULT, [])]
         return ticket_dict
 
     def get_ticket(self, args):
@@ -239,7 +250,7 @@ class SNOWAPI(DataStore):
         :param args:
         :return:
         """
-        ticket_id = args.get('ticketId')
+        ticket_id = args.get(self.KEY_TICKET_ID)
         generic_error = 'Unable to retrieve ticket information for {}.'.format(ticket_id)
 
         ext_user_clause = '&u_reporter=' + args.get(self.KEY_REPORTER) if args.get(self.KEY_REPORTER) else ''
@@ -256,10 +267,10 @@ class SNOWAPI(DataStore):
             self._logger.error('Expected status code {} got {}.'.format(codes.ok, response.status_code))
             raise Exception(generic_error)
 
-        if not snow_data.get('result'):
+        if not snow_data.get(self.KEY_RESULT):
             raise Exception(generic_error)
 
-        ticket_data = snow_data['result'][0]
+        ticket_data = snow_data[self.KEY_RESULT][0]
 
         # Necessary evil for converting unicode to bool
         ticket_data['u_closed'] = True if 'true' in ticket_data['u_closed'].lower() else False
@@ -277,13 +288,15 @@ class SNOWAPI(DataStore):
             raise Exception('Invalid source provided. Failed to check for duplicate ticket.')
 
         try:
-            url_args = self._datastore.create_url_parameters({'closed': 'false',
+            url_args = self._datastore.create_url_parameters({self.KEY_CLOSED: 'false',
                                                               self.KEY_SOURCE: quote_plus(source)})
             query = '/{}{}'.format(self.TICKET_TABLE_NAME, url_args)
             response = self._datastore.get_request(query)
             snow_data = json.loads(response.content)
-            results = snow_data.get('result', [])
-            _duplicate_ticket_ids = [d.get('u_number') for d in results if d.get('u_number') != reclassified_from]
+            results = snow_data.get(self.KEY_RESULT, [])
+            _duplicate_ticket_ids = [
+                d.get(self.KEY_U_NUMBER) for d in results if d.get(self.KEY_U_NUMBER) != reclassified_from
+            ]
             return len(_duplicate_ticket_ids) > 0, _duplicate_ticket_ids
         except Exception as e:
             self._logger.error('Unable to determine if {} is a duplicate {}.'.format(source, e))
@@ -308,15 +321,15 @@ class SNOWAPI(DataStore):
             self._logger.error('Expected status code {} got {}.'.format(codes.ok, response.status_code))
             return
 
-        if 'result' not in snow_data:
+        if self.KEY_RESULT not in snow_data:
             self._logger.error('"result" does not exist in snow_data {}.'.format(snow_data))
             return
 
-        if not snow_data.get('result'):
+        if not snow_data.get(self.KEY_RESULT):
             self._logger.error('No records found for {}.'.format(ticket_id))
             return
 
-        return snow_data['result'][0]['sys_id']
+        return snow_data[self.KEY_RESULT][0]['sys_id']
 
     def _send_to_middleware(self, payload):
         """

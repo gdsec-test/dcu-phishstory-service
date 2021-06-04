@@ -1,11 +1,10 @@
-import logging.config
 import os
 import time
 from concurrent import futures
 
 import grpc
-import yaml
 from celery import Celery
+from dcustructuredlogginggrpc import LoggerInterceptor, get_logging
 
 import pb.phishstory_service_pb2_grpc
 from celeryconfig import CeleryConfig
@@ -25,18 +24,7 @@ capp.config_from_object(CeleryConfig())
 
 _ONE_DAY_IN_SECONDS = 86400
 
-path = os.path.dirname(os.path.abspath(__file__)) + '/' + 'logging.yaml'
-value = os.getenv('LOG_CFG', None)
-if value:
-    path = value
-if os.path.exists(path):
-    with open(path, 'rt') as f:
-        lconfig = yaml.safe_load(f.read())
-    logging.config.dictConfig(lconfig)
-else:
-    logging.basicConfig(level=logging.INFO)
-logging.raiseExceptions = True
-logger = logging.getLogger(__name__)
+logger = get_logging()
 
 
 class API(PhishstoryServicer):
@@ -125,7 +113,7 @@ class API(PhishstoryServicer):
 
 def serve():
     # Configure and start service
-    server = grpc.server(thread_pool=futures.ThreadPoolExecutor(max_workers=10))
+    server = grpc.server(thread_pool=futures.ThreadPoolExecutor(max_workers=10), interceptors=[LoggerInterceptor()])
     pb.phishstory_service_pb2_grpc.add_PhishstoryServicer_to_server(
         API(), server)
     logger.info("Listening on port 50051...")

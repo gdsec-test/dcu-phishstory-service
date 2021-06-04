@@ -1,9 +1,9 @@
 import json
-import logging
 from urllib.parse import quote_plus
 
 from dcdatabase.emailmongo import EmailMongo
 from dcdatabase.phishstorymongo import PhishstoryMongo
+from dcustructuredlogginggrpc import get_logging
 from requests import codes
 
 from service.api.interface import DataStore
@@ -23,7 +23,7 @@ class SNOWAPI(DataStore):
                               'usrfiles.com', 'site123.me', 'onelink.me', 'i-m.mx', 'tonohost.com', 'backblaze.com'}
 
     def __init__(self, app_settings, celery):
-        self._logger = logging.getLogger(__name__)
+        self._logger = get_logging()
 
         self._datastore = SNOWHelper(app_settings)
         self._db = PhishstoryMongo(app_settings)

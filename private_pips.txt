@@ -1,1 +1,2 @@
 git+ssh://git@github.secureserver.net/digital-crimes/dcdatabase.git
+git+ssh://git@github.com/gdcorp-infosec/dcu-structured-logging-grpc.git

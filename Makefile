@@ -6,7 +6,8 @@ COMMIT=
 BUILD_BRANCH=origin/master
 SHELL=/bin/bash
 
-PRIVATE_PIPS="git@github.secureserver.net:digital-crimes/dcdatabase.git"
+PRIVATE_PIPS="git@github.secureserver.net:digital-crimes/dcdatabase.git" \
+"git@github.com:gdcorp-infosec/dcu-structured-logging-grpc.git"
 
 all: env
 

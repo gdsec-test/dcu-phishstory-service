@@ -9,11 +9,12 @@ RUN addgroup dcu && adduser --disabled-password --disabled-login --no-create-hom
 EXPOSE 50051
 
 # Move files to new directory in docker container
-COPY ./*.ini ./*.sh ./run.py ./*.yaml ./*.py /app/
+COPY ./*.ini ./*.sh ./run.py ./*.py /app/
 COPY . /tmp
 RUN chown dcu:dcu -R /app
 
 RUN pip install --compile /tmp/private_pips/dcdatabase
+RUN pip install --compile /tmp/private_pips/dcu-structured-logging-grpc/
 RUN pip install --compile /tmp && rm -rf /tmp/*
 
 ENTRYPOINT ["/app/runserver.sh"]

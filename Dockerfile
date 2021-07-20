@@ -13,8 +13,6 @@ COPY ./*.ini ./*.sh ./run.py ./*.py /app/
 COPY . /tmp
 RUN chown dcu:dcu -R /app
 
-RUN pip install --compile /tmp/private_pips/dcdatabase
-RUN pip install --compile /tmp/private_pips/dcu-structured-logging-grpc/
-RUN pip install --compile /tmp && rm -rf /tmp/*
+RUN PIP_CONFIG_FILE=/tmp/pip_config/pip.conf pip install --compile /tmp && rm -rf /tmp/*
 
 ENTRYPOINT ["/app/runserver.sh"]

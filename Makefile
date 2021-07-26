@@ -3,7 +3,7 @@ BUILDROOT=$(HOME)/dockerbuild/$(REPONAME)
 DOCKERREPO=docker-dcu-local.artifactory.secureserver.net/phishstory-service
 DATE=$(shell date)
 COMMIT=
-BUILD_BRANCH=origin/master
+BUILD_BRANCH=origin/main
 SHELL=/bin/bash
 
 all: env

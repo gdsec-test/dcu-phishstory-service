@@ -30,7 +30,7 @@ class SNOWAPI(DataStore):
     USER_GENERATED_DOMAINS = {'joomla.com', 'wix.com', 'wixsite.com', 'htmlcomponentservice.com', 'sendgrid.net',
                               'mediafire.com', '16mb.com', 'gridserver.com', '000webhost.com', 'filesusr.com',
                               'usrfiles.com', 'site123.me', 'onelink.me', 'i-m.mx', 'tonohost.com', 'backblaze.com',
-                              'im-creator.com', 'quizzory.com', 'builderall.com'}
+                              'im-creator.com', 'quizzory.com', 'builderall.com', 'formtools.com'}
 
     def __init__(self, app_settings, celery):
         self._logger = get_logging()

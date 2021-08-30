@@ -136,15 +136,14 @@ class SNOWAPI(DataStore):
             args[self.KEY_TICKET_ID] = snow_data[self.KEY_RESULT][self.KEY_U_NUMBER]
             json_for_middleware = {key: args[key] for key in MIDDLEWARE_MODEL}
 
-            # The metadata sub-document to contain BOTH iris shim keys and fraud_score key
+            # The metadata sub-document to contain the fraud_score key
             if args.get(self.KEY_METADATA):
                 json_for_middleware[self.KEY_METADATA] = args[self.KEY_METADATA]
 
             # Checking for info field for evidence tracking purposes
             if args.get(self.KEY_INFO):
                 json_for_middleware['evidence'] = {
-                    'iris': args[self.KEY_INFO] == 'IRIS',
-                    'snow': args[self.KEY_INFO] != 'IRIS'
+                    'snow': True
                 }
 
             if _is_trusted_reporter:

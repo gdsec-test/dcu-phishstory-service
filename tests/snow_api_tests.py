@@ -294,15 +294,14 @@ class TestSNOWAPI:
     @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
     @patch.object(SNOWHelper, 'post_request')
     @patch.object(SNOWAPI, 'check_duplicate', return_value=(False, []))
-    def test_create_ticket_iris_evidence(self, check_duplicate, post_request, _send_to_middleware):
+    def test_create_ticket_not_snow_evidence(self, check_duplicate, post_request, _send_to_middleware):
         post_request.return_value = MagicMock(status_code=codes.created,
-                                              content=json.dumps({'result': {'u_number': 'test-ticket-iris'}}))
+                                              content=json.dumps({'result': {'u_number': 'test-ticket-not-snow'}}))
         data = {'type': 'PHISHING', 'metadata': {'test': 'test'}, 'source': 'test-source', 'sourceDomainOrIp': '',
-                'sourceSubDomain': '', 'proxy': '', 'reporter': '', 'target': '', 'info': 'IRIS'}
+                'sourceSubDomain': '', 'proxy': '', 'reporter': '', 'target': ''}
         self._api.create_ticket(data)
-        mongo_obj = self._api._db.get_incident('test-ticket-iris')
-        assert_true(mongo_obj.get('evidence', {}).get('iris'))
-        assert_false(mongo_obj.get('evidence', {}).get('snow'))
+        mongo_obj = self._api._db.get_incident('test-ticket-not-snow')
+        assert_is_none(mongo_obj.get('evidence', {}).get('snow'))
         _send_to_middleware.assert_called()
         post_request.assert_called()
         check_duplicate.assert_called()
@@ -319,7 +318,6 @@ class TestSNOWAPI:
         self._api.create_ticket(data)
         mongo_obj = self._api._db.get_incident('test-ticket-snow')
         assert_true(mongo_obj.get('evidence', {}).get('snow'))
-        assert_false(mongo_obj.get('evidence', {}).get('iris'))
         _send_to_middleware.assert_called()
         post_request.assert_called()
         check_duplicate.assert_called()

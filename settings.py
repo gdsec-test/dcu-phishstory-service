@@ -26,6 +26,7 @@ class ProductionAppConfig(AppConfig):
     MIDDLEWARE_QUEUE = 'dcumiddleware'
     EXEMPT_REPORTERS = {'Sucuri': '395146638', 'DBP': '290638894', 'PhishLabs': '129092584'}
     TRUSTED_REPORTERS = {'375006196'}  # Threat Hunting
+    SNOW_USER = 'dcuapiv2'
 
     def __init__(self):
         super(ProductionAppConfig, self).__init__()

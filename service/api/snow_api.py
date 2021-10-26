@@ -31,7 +31,7 @@ class SNOWAPI(DataStore):
                               'mediafire.com', '16mb.com', 'gridserver.com', '000webhost.com', 'filesusr.com',
                               'usrfiles.com', 'site123.me', 'onelink.me', 'i-m.mx', 'tonohost.com', 'backblaze.com',
                               'im-creator.com', 'quizzory.com', 'builderall.com', 'formtools.com', 'bitly.com',
-                              'multiscreensite.com'}
+                              'multiscreensite.com', 'sunnylandingpages.com', 'surveyheart.com'}
 
     def __init__(self, app_settings, celery):
         self._logger = get_logging()

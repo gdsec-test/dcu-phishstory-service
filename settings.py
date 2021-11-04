@@ -24,6 +24,7 @@ class AppConfig(object):
 class ProductionAppConfig(AppConfig):
     SNOW_URL = 'https://godaddy.service-now.com/api/now/table'
     MIDDLEWARE_QUEUE = 'dcumiddleware'
+    GDBS_QUEUE = 'gdbrandservice'
     EXEMPT_REPORTERS = {'Sucuri': '395146638', 'DBP': '290638894', 'PhishLabs': '129092584'}
     TRUSTED_REPORTERS = {'375006196'}  # Threat Hunting
     SNOW_USER = 'dcuapiv2'
@@ -35,6 +36,7 @@ class ProductionAppConfig(AppConfig):
 class OTEAppConfig(AppConfig):
     SNOW_URL = 'https://godaddytest.service-now.com/api/now/table'
     MIDDLEWARE_QUEUE = 'otedcumiddleware'
+    GDBS_QUEUE = 'otegdbrandservice'
     EXEMPT_REPORTERS = {'Sucuri': '1500631816', 'DBP': '1500495186', 'PhishLabs': '908557'}
     TRUSTED_REPORTERS = {'1500602948'}  # Threat Hunting
 
@@ -45,6 +47,7 @@ class OTEAppConfig(AppConfig):
 class DevelopmentAppConfig(AppConfig):
     SNOW_URL = 'https://godaddydev.service-now.com/api/now/table'
     MIDDLEWARE_QUEUE = 'devdcumiddleware'
+    GDBS_QUEUE = 'devgdbrandservice'
     EXEMPT_REPORTERS = {'dcuapi_test_dev': '1054985'}
     TRUSTED_REPORTERS = {'4134470'}  # Threat Hunting
 

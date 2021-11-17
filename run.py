@@ -3,11 +3,9 @@ import time
 from concurrent import futures
 
 import grpc
-from celery import Celery
 from dcustructuredlogginggrpc import LoggerInterceptor, get_logging
 
 import pb.phishstory_service_pb2_grpc
-from celeryconfig import CeleryConfig
 from pb.convertor import dict_to_protobuf, protobuf_to_dict
 from pb.phishstory_service_pb2 import (CheckDuplicateResponse,
                                        CreateTicketResponse, GetTicketResponse,
@@ -18,18 +16,13 @@ from service.api.snow_api import SNOWAPI
 from settings import config_by_name
 
 app_settings = config_by_name[os.getenv('sysenv', 'dev')]()
-
-capp = Celery()
-capp.config_from_object(CeleryConfig())
-
 _ONE_DAY_IN_SECONDS = 86400
-
 logger = get_logging()
 
 
 class API(PhishstoryServicer):
     def __init__(self):
-        self._api = SNOWAPI(app_settings, capp)
+        self._api = SNOWAPI(app_settings)
 
     def CreateTicket(self, request, context):
         logger.info("Received CreateTicket Request")

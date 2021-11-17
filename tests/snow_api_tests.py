@@ -14,8 +14,7 @@ from settings import TestAppConfig
 class TestSNOWAPI(TestCase):
 
     def setUp(self):
-        self._api = SNOWAPI(TestAppConfig(), None)
-        self._api._celery = MagicMock()
+        self._api = SNOWAPI(TestAppConfig())
         self._api._db._mongo._collection = mongomock.MongoClient().db.collection
         self._api._emaildb._mongo._collection = mongomock.MongoClient().db.collection
         self._api._db._mongo.add_incident(dict(_id=1234, type='PHISHING', reporter='111222333',
@@ -35,7 +34,7 @@ class TestSNOWAPI(TestCase):
                                                sourceSubDomain='www.abc.com', source='http://www.abc.com'))
         db_downtime = TestAppConfig()
         db_downtime.DATABASE_IMPACTED = True
-        self._api_downtime = SNOWAPI(db_downtime, None)
+        self._api_downtime = SNOWAPI(db_downtime)
 
     # _check_duplicate tests
 
@@ -178,16 +177,17 @@ class TestSNOWAPI(TestCase):
         _get_sys_id.assert_called()
         patch_request.assert_called()
 
+    @patch('service.api.snow_api.get_celery')
     @patch.object(SNOWAPI, '_get_sys_id')
     @patch.object(SNOWHelper, 'patch_request')
-    def test_update_ticket(self, patch_request, _get_sys_id):
+    def test_update_ticket(self, patch_request, _get_sys_id, celery):
         patch_request.return_value = MagicMock(status_code=codes.ok, content=json.dumps({}))
         _get_sys_id.return_value = 'test-sys-id'
         assert_is_none(self._api.update_ticket({'ticketId': 'test-ticket', 'closed': True,
                                                 'close_reason': 'false_positive'}))
         _get_sys_id.assert_called()
         patch_request.assert_called()
-        self._api._celery.send_task.assert_called_with('run.hubstream_sync', ({'ticketId': 'test-ticket'},))
+        celery.return_value.send_task.assert_called_with('run.hubstream_sync', ({'ticketId': 'test-ticket'},))
 
     def test_update_ticket_db_downtime(self):
         assert_raises(Exception, self._api.update_ticket)

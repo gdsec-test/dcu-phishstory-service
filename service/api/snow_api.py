@@ -6,6 +6,7 @@ from dcdatabase.phishstorymongo import PhishstoryMongo
 from dcustructuredlogginggrpc import get_logging
 from requests import codes
 
+from celeryconfig import get_celery
 from service.api.interface import DataStore
 from service.connectors.snow import SNOWHelper
 from service.models.ticket_model import (MIDDLEWARE_MODEL, REPORTER_MODEL,
@@ -33,13 +34,12 @@ class SNOWAPI(DataStore):
                               'im-creator.com', 'quizzory.com', 'builderall.com', 'formtools.com', 'bitly.com',
                               'multiscreensite.com', 'sunnylandingpages.com', 'surveyheart.com', 'editorx.io'}
 
-    def __init__(self, app_settings, celery):
+    def __init__(self, app_settings):
         self._logger = get_logging()
 
         self._datastore = SNOWHelper(app_settings)
         self._db = PhishstoryMongo(app_settings)
         self._emaildb = EmailMongo(app_settings)
-        self._celery = celery
         self._exempt_reporter_ids = set(app_settings.EXEMPT_REPORTERS.values())
         self._db_impacted = app_settings.DATABASE_IMPACTED
         self._trusted_reporters = app_settings.TRUSTED_REPORTERS
@@ -339,13 +339,15 @@ class SNOWAPI(DataStore):
         """
         try:
             self._logger.info(f'Sending payload to Middleware {payload}.')
-            self._celery.send_task('run.process', (payload,))
+            celery = get_celery()
+            celery.send_task('run.process', (payload,))
         except Exception as e:
             self._logger.error(f'Unable to send payload to Middleware {payload} {e}.')
 
     def __sync_to_hubstream(self, ticket_id: str) -> None:
         try:
             self._logger.info(f'Sending payload to GDBS {ticket_id} for Hubstream sync')
-            self._celery.send_task('run.hubstream_sync', ({self.KEY_TICKET_ID: ticket_id},))
+            celery = get_celery()
+            celery.send_task('run.hubstream_sync', ({self.KEY_TICKET_ID: ticket_id},))
         except Exception as e:
             self._logger.error(f'Error sending payload to GDBS {ticket_id} for Hubstream sync {e}')

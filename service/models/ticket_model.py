@@ -39,7 +39,9 @@ MIDDLEWARE_MODEL = ['ticketId',  # Data model that should be passed to Middlewar
                     'sourceSubDomain',
                     'target',
                     'proxy',
-                    'reporter']
+                    'reporter',
+                    'info',
+                    'infoUrl']
 
 REPORTER_MODEL = {  # Data that may be returned in a GetTicket request
     'u_number': 'ticketId',

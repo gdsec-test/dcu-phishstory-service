@@ -1,4 +1,5 @@
 import json
+from unittest import TestCase
 
 import mongomock
 from mock import MagicMock, patch
@@ -10,31 +11,30 @@ from service.api.snow_api import SNOWAPI, SNOWHelper
 from settings import TestAppConfig
 
 
-class TestSNOWAPI:
+class TestSNOWAPI(TestCase):
 
-    @classmethod
-    def setup(cls):
-        cls._api = SNOWAPI(TestAppConfig(), None)
-        cls._api._db._mongo._collection = mongomock.MongoClient().db.collection
-        cls._api._emaildb._mongo._collection = mongomock.MongoClient().db.collection
-        cls._api._db._mongo.add_incident(dict(_id=1234, type='PHISHING', reporter='111222333',
-                                              sourceDomainOrIp='abc.com', phishstory_status='OPEN',
-                                              sourceSubDomain='www.abc.com', source='http://www.abc.com'))
-        cls._api._db._mongo.add_incident(dict(_id=1235, type='PHISHING', reporter='111222333',
-                                              sourceDomainOrIp='abc.com', phishstory_status='PAUSED',
-                                              sourceSubDomain='abc.com', source='http://abc.com'))
-        cls._api._db._mongo.add_incident(dict(_id=1236, type='PHISHING', reporter='111222333',
-                                              sourceDomainOrIp='abc.com', phishstory_status='PROCESSING',
-                                              sourceSubDomain='abc.com', source='http://abc.com'))
-        cls._api._db._mongo.add_incident(dict(_id=1237, type='PHISHING', reporter='111222333',
-                                              sourceDomainOrIp='abc.com', phishstory_status='OPEN',
-                                              sourceSubDomain='www.abc.com', source='http://www.abc.com'))
-        cls._api._db._mongo.add_incident(dict(_id=1238, type='PHISHING', reporter='111222333',
-                                              sourceDomainOrIp='abc.com', phishstory_status='OPEN',
-                                              sourceSubDomain='www.abc.com', source='http://www.abc.com'))
+    def setUp(self):
+        self._api = SNOWAPI(TestAppConfig())
+        self._api._db._mongo._collection = mongomock.MongoClient().db.collection
+        self._api._emaildb._mongo._collection = mongomock.MongoClient().db.collection
+        self._api._db._mongo.add_incident(dict(_id=1234, type='PHISHING', reporter='111222333',
+                                               sourceDomainOrIp='abc.com', phishstory_status='OPEN',
+                                               sourceSubDomain='www.abc.com', source='http://www.abc.com'))
+        self._api._db._mongo.add_incident(dict(_id=1235, type='PHISHING', reporter='111222333',
+                                               sourceDomainOrIp='abc.com', phishstory_status='PAUSED',
+                                               sourceSubDomain='abc.com', source='http://abc.com'))
+        self._api._db._mongo.add_incident(dict(_id=1236, type='PHISHING', reporter='111222333',
+                                               sourceDomainOrIp='abc.com', phishstory_status='PROCESSING',
+                                               sourceSubDomain='abc.com', source='http://abc.com'))
+        self._api._db._mongo.add_incident(dict(_id=1237, type='PHISHING', reporter='111222333',
+                                               sourceDomainOrIp='abc.com', phishstory_status='OPEN',
+                                               sourceSubDomain='www.abc.com', source='http://www.abc.com'))
+        self._api._db._mongo.add_incident(dict(_id=1238, type='PHISHING', reporter='111222333',
+                                               sourceDomainOrIp='abc.com', phishstory_status='OPEN',
+                                               sourceSubDomain='www.abc.com', source='http://www.abc.com'))
         db_downtime = TestAppConfig()
         db_downtime.DATABASE_IMPACTED = True
-        cls._api_downtime = SNOWAPI(db_downtime, None)
+        self._api_downtime = SNOWAPI(db_downtime)
 
     # _check_duplicate tests
 
@@ -177,15 +177,17 @@ class TestSNOWAPI:
         _get_sys_id.assert_called()
         patch_request.assert_called()
 
+    @patch('service.api.snow_api.get_celery')
     @patch.object(SNOWAPI, '_get_sys_id')
     @patch.object(SNOWHelper, 'patch_request')
-    def test_update_ticket(self, patch_request, _get_sys_id):
+    def test_update_ticket(self, patch_request, _get_sys_id, celery):
         patch_request.return_value = MagicMock(status_code=codes.ok, content=json.dumps({}))
         _get_sys_id.return_value = 'test-sys-id'
         assert_is_none(self._api.update_ticket({'ticketId': 'test-ticket', 'closed': True,
                                                 'close_reason': 'false_positive'}))
         _get_sys_id.assert_called()
         patch_request.assert_called()
+        celery.return_value.send_task.assert_called_with('run.hubstream_sync', ({'ticketId': 'test-ticket'},))
 
     def test_update_ticket_db_downtime(self):
         assert_raises(Exception, self._api.update_ticket)

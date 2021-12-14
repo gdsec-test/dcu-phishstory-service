@@ -45,12 +45,12 @@ spec:
           - name: SNOW_PASS
             valueFrom:
               secretKeyRef:
-                name: svc-snow
+                name: svc-snow-v2
                 key: password
           - name: BROKER_URL
             valueFrom:
               secretKeyRef:
-                name: amqp-connection-string
+                name: amqp-connection-string-v2
                 key: url
           - name: MONGO_URL
             valueFrom:

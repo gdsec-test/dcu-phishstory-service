@@ -121,8 +121,6 @@ class SNOWAPI(DataStore):
         try:
             payload = self._datastore.create_post_payload(args)
             response = self._datastore.post_request(f'/{self.TICKET_TABLE_NAME}', payload)
-            self._logger.error(payload)
-            self._logger.error(response.content)
 
             snow_data = json.loads(response.content)
         except Exception as e:

@@ -8,13 +8,13 @@ from nose.tools import (assert_equal, assert_false, assert_is_none,
 from requests import codes
 
 from service.api.snow_api import SNOWAPI, SNOWHelper
-from settings import TestAppConfig
+from settings import UnitTestAppConfig
 
 
 class TestSNOWAPI(TestCase):
 
     def setUp(self):
-        self._api = SNOWAPI(TestAppConfig())
+        self._api = SNOWAPI(UnitTestAppConfig())
         self._api._db._mongo._collection = mongomock.MongoClient().db.collection
         self._api._emaildb._mongo._collection = mongomock.MongoClient().db.collection
         self._api._db._mongo.add_incident(dict(_id=1234, type='PHISHING', reporter='111222333',
@@ -32,7 +32,7 @@ class TestSNOWAPI(TestCase):
         self._api._db._mongo.add_incident(dict(_id=1238, type='PHISHING', reporter='111222333',
                                                sourceDomainOrIp='abc.com', phishstory_status='OPEN',
                                                sourceSubDomain='www.abc.com', source='http://www.abc.com'))
-        db_downtime = TestAppConfig()
+        db_downtime = UnitTestAppConfig()
         db_downtime.DATABASE_IMPACTED = True
         self._api_downtime = SNOWAPI(db_downtime)
 

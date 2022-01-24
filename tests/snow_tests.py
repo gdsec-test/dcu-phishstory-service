@@ -1,14 +1,14 @@
 from nose.tools import assert_equal
 
 from service.connectors.snow import SNOWHelper
-from settings import TestAppConfig
+from settings import UnitTestAppConfig
 
 
 class TestSnowHelper:
 
     @classmethod
     def setup(cls):
-        cls._helper = SNOWHelper(TestAppConfig())
+        cls._helper = SNOWHelper(UnitTestAppConfig())
 
     def test_param_no_dates(self):
         start = None

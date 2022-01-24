@@ -44,6 +44,17 @@ class OTEAppConfig(AppConfig):
         super(OTEAppConfig, self).__init__()
 
 
+class TestAppConfig(AppConfig):
+    SNOW_URL = 'https://godaddydev.service-now.com/api/now/table'
+    MIDDLEWARE_QUEUE = 'testdcumiddleware'
+    GDBS_QUEUE = 'testgdbrandservice'
+    EXEMPT_REPORTERS = {}
+    TRUSTED_REPORTERS = {}
+
+    def __init__(self):
+        super(TestAppConfig, self).__init__()
+
+
 class DevelopmentAppConfig(AppConfig):
     SNOW_URL = 'https://godaddydev.service-now.com/api/now/table'
     MIDDLEWARE_QUEUE = 'devdcumiddleware'
@@ -55,17 +66,18 @@ class DevelopmentAppConfig(AppConfig):
         super(DevelopmentAppConfig, self).__init__()
 
 
-class TestAppConfig(AppConfig):
+class UnitTestAppConfig(AppConfig):
     SNOW_URL = 'https://godaddydev.service-now.com/api/now/table'
     EXEMPT_REPORTERS = {'Sucuri': '0', 'DBP': '0', 'PhishLabs': '0'}
     TRUSTED_REPORTERS = {'threat-hunting-reporter-id'}
 
     def __init__(self):
         self.DBURL = 'mongodb://guest:guest@localhost/test'
-        super(TestAppConfig, self).__init__()
+        super(UnitTestAppConfig, self).__init__()
 
 
 config_by_name = {'dev': DevelopmentAppConfig,
                   'ote': OTEAppConfig,
                   'prod': ProductionAppConfig,
-                  'test': TestAppConfig}
+                  'test': TestAppConfig,
+                  'unit-test': UnitTestAppConfig}

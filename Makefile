@@ -62,6 +62,12 @@ ote: prep
 	sed -ie 's/THIS_STRING_IS_REPLACED_DURING_BUILD/$(DATE)/g' $(BUILDROOT)/k8s/ote/deployment.yaml
 	docker build -t $(DOCKERREPO):ote $(BUILDROOT)
 
+.PHONY: test-env
+test-env: prep
+	@echo "----- building $(REPONAME) test -----"
+	sed -ie 's/THIS_STRING_IS_REPLACED_DURING_BUILD/$(DATE)/g' $(BUILDROOT)/k8s/test/deployment.yaml
+	docker build -t $(DOCKERREPO):test $(BUILDROOT)
+
 .PHONY: dev
 dev: prep
 	@echo "----- building $(REPONAME) dev -----"
@@ -72,19 +78,25 @@ dev: prep
 prod-deploy: prod
 	@echo "----- deploying $(REPONAME) prod -----"
 	docker push $(DOCKERREPO):$(COMMIT)
-	kubectl --context prod-dcu apply -f $(BUILDROOT)/k8s/prod/deployment.yaml --record
+	kubectl --context prod-dcu apply -f $(BUILDROOT)/k8s/prod/deployment.yaml
 
 .PHONY: ote-deploy
 ote-deploy: ote
 	@echo "----- deploying $(REPONAME) ote -----"
 	docker push $(DOCKERREPO):ote
-	kubectl --context ote-dcu apply -f $(BUILDROOT)/k8s/ote/deployment.yaml --record
+	kubectl --context ote-dcu apply -f $(BUILDROOT)/k8s/ote/deployment.yaml
+
+.PHONY: test-deploy
+test-deploy: test-env
+	@echo "----- deploying $(REPONAME) test -----"
+	docker push $(DOCKERREPO):test
+	kubectl --context test-dcu apply -f $(BUILDROOT)/k8s/test/deployment.yaml
 
 .PHONY: dev-deploy
 dev-deploy: dev
 	@echo "----- deploying $(REPONAME) dev -----"
 	docker push $(DOCKERREPO):dev
-	kubectl --context dev-dcu apply -f $(BUILDROOT)/k8s/dev/deployment.yaml --record
+	kubectl --context dev-dcu apply -f $(BUILDROOT)/k8s/dev/deployment.yaml
 
 .PHONY: clean
 clean:

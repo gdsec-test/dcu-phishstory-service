@@ -33,7 +33,7 @@ class SNOWAPI(DataStore):
                               'usrfiles.com', 'site123.me', 'onelink.me', 'i-m.mx', 'tonohost.com', 'backblaze.com',
                               'im-creator.com', 'quizzory.com', 'builderall.com', 'formtools.com', 'bitly.com',
                               'multiscreensite.com', 'sunnylandingpages.com', 'surveyheart.com', 'editorx.io',
-                              'forms.app'}
+                              'forms.app', 'joomag.com', 'company.site'}
 
     def __init__(self, app_settings):
         self._logger = get_logging()

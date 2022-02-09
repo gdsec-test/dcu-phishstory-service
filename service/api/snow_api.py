@@ -28,16 +28,10 @@ class SNOWAPI(DataStore):
     KEY_TICKET_ID = 'ticketId'
     KEY_TYPE = 'type'
     KEY_U_NUMBER = 'u_number'
-    USER_GENERATED_DOMAINS = {'joomla.com', 'wix.com', 'wixsite.com', 'htmlcomponentservice.com', 'sendgrid.net',
-                              'mediafire.com', '16mb.com', 'gridserver.com', '000webhost.com', 'filesusr.com',
-                              'usrfiles.com', 'site123.me', 'onelink.me', 'i-m.mx', 'tonohost.com', 'backblaze.com',
-                              'im-creator.com', 'quizzory.com', 'builderall.com', 'formtools.com', 'bitly.com',
-                              'multiscreensite.com', 'sunnylandingpages.com', 'surveyheart.com', 'editorx.io',
-                              'forms.app', 'joomag.com', 'company.site'}
 
     def __init__(self, app_settings):
         self._logger = get_logging()
-
+        self._settings = app_settings
         self._datastore = SNOWHelper(app_settings)
         self._db = PhishstoryMongo(app_settings)
         self._emaildb = EmailMongo(app_settings)
@@ -49,7 +43,7 @@ class SNOWAPI(DataStore):
     def _domain_cap_reached(self, abuse_type, reporter_id, subdomain, domain):
         # Don't cap tickets in case of content complaints, usergen domains, and exempted reporters
         if abuse_type == 'CONTENT' or \
-                domain in self.USER_GENERATED_DOMAINS or \
+                domain in self._settings.user_gen_domains or \
                 reporter_id in self._exempt_reporter_ids:
             return False
 

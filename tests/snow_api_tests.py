@@ -2,7 +2,7 @@ import json
 from unittest import TestCase
 
 import mongomock
-from mock import MagicMock, patch
+from mock import MagicMock, PropertyMock, patch
 from nose.tools import (assert_equal, assert_false, assert_is_none,
                         assert_list_equal, assert_raises, assert_true)
 from requests import codes
@@ -92,6 +92,7 @@ class TestSNOWAPI(TestCase):
         assert_raises(Exception, self._api.create_ticket, {'source': 'test-source', 'type': 'SPAM'})
         check_duplicate.assert_called()
 
+    @patch.object(UnitTestAppConfig, 'user_gen_domains', PropertyMock(return_value=['joomla.com']))
     @patch.object(SNOWAPI, 'check_duplicate', return_value=(False, []))
     @patch.object(SNOWHelper, 'post_request', return_value=None, side_effect=Exception())
     def test_create_ticket_exception(self, post_request, check_duplicate):
@@ -99,6 +100,7 @@ class TestSNOWAPI(TestCase):
         post_request.assert_called()
         check_duplicate.assert_called()
 
+    @patch.object(UnitTestAppConfig, 'user_gen_domains', PropertyMock(return_value=['joomla.com']))
     @patch.object(SNOWAPI, 'check_duplicate', return_value=(False, []))
     @patch.object(SNOWHelper, 'post_request')
     def test_create_ticket_status_code(self, post_request, check_duplicate):
@@ -107,6 +109,7 @@ class TestSNOWAPI(TestCase):
         post_request.assert_called()
         check_duplicate.assert_called()
 
+    @patch.object(UnitTestAppConfig, 'user_gen_domains', PropertyMock(return_value=['joomla.com']))
     @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
     @patch.object(SNOWHelper, 'post_request')
     @patch.object(SNOWAPI, 'check_duplicate', return_value=(False, []))
@@ -135,6 +138,7 @@ class TestSNOWAPI(TestCase):
         _domain_cap_reached.assert_not_called()
         check_duplicate.assert_called()
 
+    @patch.object(UnitTestAppConfig, 'user_gen_domains', PropertyMock(return_value=['joomla.com']))
     @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
     @patch.object(SNOWHelper, 'post_request')
     @patch.object(SNOWAPI, 'check_duplicate', return_value=(False, []))
@@ -293,6 +297,7 @@ class TestSNOWAPI(TestCase):
         assert_equal(self._api._get_sys_id('test-id'), '1')
         get_request.assert_called()
 
+    @patch.object(UnitTestAppConfig, 'user_gen_domains', PropertyMock(return_value=['joomla.com']))
     @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
     @patch.object(SNOWHelper, 'post_request')
     @patch.object(SNOWAPI, 'check_duplicate', return_value=(False, []))
@@ -308,6 +313,7 @@ class TestSNOWAPI(TestCase):
         post_request.assert_called()
         check_duplicate.assert_called()
 
+    @patch.object(UnitTestAppConfig, 'user_gen_domains', PropertyMock(return_value=['joomla.com']))
     @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
     @patch.object(SNOWHelper, 'post_request')
     @patch.object(SNOWAPI, 'check_duplicate', return_value=(False, []))
@@ -324,6 +330,7 @@ class TestSNOWAPI(TestCase):
         post_request.assert_called()
         check_duplicate.assert_called()
 
+    @patch.object(UnitTestAppConfig, 'user_gen_domains', PropertyMock(return_value=['joomla.com']))
     @patch.object(SNOWAPI, 'check_duplicate', return_value=(False, []))
     def test_domain_cap_reached(self, get_request):
         data = dict(type='PHISHING', reporter='111222333', sourceDomainOrIp='abc.com',
@@ -345,6 +352,7 @@ class TestSNOWAPI(TestCase):
         post_request.assert_called()
         check_duplicate.assert_called()
 
+    @patch.object(UnitTestAppConfig, 'user_gen_domains', PropertyMock(return_value=['joomla.com']))
     @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
     @patch.object(SNOWHelper, 'post_request')
     @patch.object(SNOWAPI, 'check_duplicate', return_value=(False, []))
@@ -359,6 +367,7 @@ class TestSNOWAPI(TestCase):
         post_request.assert_called()
         check_duplicate.assert_called()
 
+    @patch.object(UnitTestAppConfig, 'user_gen_domains', PropertyMock(return_value=['joomla.com']))
     @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
     @patch.object(SNOWHelper, 'post_request')
     @patch.object(SNOWAPI, 'check_duplicate', return_value=(False, []))
@@ -373,6 +382,7 @@ class TestSNOWAPI(TestCase):
         post_request.assert_called()
         check_duplicate.assert_called()
 
+    @patch.object(UnitTestAppConfig, 'user_gen_domains', PropertyMock(return_value=['joomla.com']))
     @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
     @patch.object(SNOWHelper, 'post_request')
     @patch.object(SNOWAPI, 'check_duplicate', return_value=(False, []))
@@ -387,6 +397,7 @@ class TestSNOWAPI(TestCase):
         post_request.assert_called()
         check_duplicate.assert_called()
 
+    @patch.object(UnitTestAppConfig, 'user_gen_domains', PropertyMock(return_value=['joomla.com']))
     @patch.object(SNOWAPI, '_send_to_middleware', return_value=None)
     @patch.object(SNOWHelper, 'post_request')
     @patch.object(SNOWAPI, 'check_duplicate', return_value=(False, []))

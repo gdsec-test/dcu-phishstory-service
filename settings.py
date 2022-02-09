@@ -1,12 +1,16 @@
 import os
 from distutils.util import strtobool
 
-from pymongo import uri_parser
+from dcustructuredlogginggrpc import get_logging
+from pymongo import MongoClient, uri_parser
+
+logger = get_logging()
 
 
 class AppConfig(object):
     SNOW_URL = None
     SNOW_USER = 'dcuapi'
+    BLOCKLIST_COLLECTION = 'blacklist'
     COLLECTION = 'incidents'
     EMAIL_COLLECTION = 'acknowledge_email'
     DBURL = os.getenv('MONGO_URL', '')
@@ -19,6 +23,21 @@ class AppConfig(object):
         self.DB_USER = parsed_uri['username']
         self.DB_HOST = parsed_uri['nodelist'][0][0]
         self.DATABASE_IMPACTED = strtobool(os.getenv('DATABASE_IMPACTED', 'False'))
+
+        self._blacklist_client = MongoClient(self.DBURL, connect=False)
+        self._blacklist_db = self._blacklist_client[self.DB]
+        self._blacklist_collection = self._blacklist_db[self.BLOCKLIST_COLLECTION]
+        self._user_gen_domains = []
+
+    @property
+    def user_gen_domains(self):
+        if not self._user_gen_domains:
+            try:
+                blacklist_record = self._blacklist_collection.find({'category': 'user_gen'})
+                self._user_gen_domains = [x.get('entity') for x in blacklist_record]
+            except Exception as e:
+                logger.error('Unable to get user gen list from Mongo: {}'.format(e))
+        return self._user_gen_domains
 
 
 class ProductionAppConfig(AppConfig):

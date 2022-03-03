@@ -57,3 +57,15 @@ spec:
               secretKeyRef:
                 name: mongodb-connection-string-ote
                 key: url
+          - name: ELASTIC_APM_SERVER_URL
+            valueFrom:
+              secretKeyRef:
+                name: apm-access
+                key: url
+          - name: ELASTIC_APM_SECRET_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: apm-access
+                key: secret
+          - name: ELASTIC_APM_ENVIRONMENT
+            value: ote

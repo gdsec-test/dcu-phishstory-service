@@ -9,6 +9,7 @@ click-plugins==1.1.1
 click-repl==0.2.0
 dcdatabase==1.3
 dcu-structured-logging-grpc==1.0.0
+elastic-apm==6.7.2
 grpcio==1.36.1
 idna==2.10
 importlib-metadata==3.7.3

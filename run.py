@@ -4,6 +4,12 @@ from concurrent import futures
 
 import grpc
 from dcustructuredlogginggrpc import LoggerInterceptor, get_logging
+from elasticapm import (Client, instrument, set_transaction_outcome,
+                        trace_parent_from_string)
+from elasticapm.conf import constants
+from elasticapm.contrib.celery import signals
+from elasticapm.traces import execution_context
+from grpc_interceptor import ServerInterceptor
 
 import pb.phishstory_service_pb2_grpc
 from pb.convertor import dict_to_protobuf, protobuf_to_dict
@@ -15,9 +21,12 @@ from pb.phishstory_service_pb2_grpc import PhishstoryServicer
 from service.api.snow_api import SNOWAPI
 from settings import config_by_name
 
-app_settings = config_by_name[os.getenv('sysenv', 'dev')]()
+env = os.getenv('sysenv', 'dev')
+app_settings = config_by_name[env]()
 _ONE_DAY_IN_SECONDS = 86400
 logger = get_logging()
+instrument()
+apm_client = Client(service_name='phishstory-service', env=env)
 
 
 class API(PhishstoryServicer):
@@ -104,9 +113,50 @@ class API(PhishstoryServicer):
         return CheckDuplicateResponse(duplicate=duplicate) if duplicate else CheckDuplicateResponse()
 
 
+class ApmInterceptor(ServerInterceptor):
+    def intercept(self, method, request, context, method_name):
+        status_code = grpc.StatusCode.OK.value[0]
+        traceparent_string = None
+        for key, value in context.invocation_metadata():
+            if key == 'trace_parent_string':
+                traceparent_string = value
+        if traceparent_string:
+            parent = trace_parent_from_string(traceparent_string)
+        else:
+            parent = None
+        apm_client.begin_transaction('grpc', trace_parent=parent)
+        result = method(request, context)
+        if context._state.code and len(context._state.code.value) > 0:
+            status_code = context._state.code.value[0]
+            outcome = constants.OUTCOME.FAILURE
+        else:
+            outcome = constants.OUTCOME.SUCCESS
+        set_transaction_outcome(outcome, override=False)
+        apm_client.end_transaction(method_name, status_code)
+        return result
+
+
+def set_celery_headers(headers=None, **kwargs):
+    """
+    Add elasticapm specific information to celery headers
+    """
+    headers = {} if headers is None else headers
+
+    transaction = execution_context.get_transaction()
+    if transaction is not None:
+        trace_parent = transaction.trace_parent
+        trace_parent_string = trace_parent.to_string()
+
+        headers.update({"elasticapm": {"trace_parent_string": trace_parent_string}})
+
+
 def serve():
+    # Need to register a singal handler for celery to ensure we hook up the trace parents correctly.
+    dispatch_uid = "elasticapm-tracing-%s"
+    signals.before_task_publish.disconnect(set_celery_headers, dispatch_uid=dispatch_uid % "before-publish")
+    signals.before_task_publish.connect(set_celery_headers, dispatch_uid=dispatch_uid % "before-publish")
     # Configure and start service
-    server = grpc.server(thread_pool=futures.ThreadPoolExecutor(max_workers=10), interceptors=[LoggerInterceptor()])
+    server = grpc.server(thread_pool=futures.ThreadPoolExecutor(max_workers=10), interceptors=[ApmInterceptor(), LoggerInterceptor()])
     pb.phishstory_service_pb2_grpc.add_PhishstoryServicer_to_server(
         API(), server)
     logger.info("Listening on port 50051...")

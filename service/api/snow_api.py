@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from urllib.parse import quote_plus
 
 from dcdatabase.emailmongo import EmailMongo
@@ -20,8 +21,10 @@ class SNOWAPI(DataStore):
     KEY_CLOSE_REASON = 'close_reason'
     KEY_EMAIL = 'email'
     KEY_INFO = 'info'
+    KEY_LAST_MODIFIED = 'last_modified'
     KEY_METADATA = 'metadata'
     KEY_REPORTER = 'reporter'
+    KEY_REPORT_COUNT = 'report_count'
     KEY_RESULT = 'result'
     KEY_SOURCE = 'source'
     KEY_SOURCE_SUBDOMAIN = 'sourceSubDomain'
@@ -98,9 +101,12 @@ class SNOWAPI(DataStore):
                 if reporter_email:
                     self._emaildb.add_new_email({self.KEY_SOURCE: source, self.KEY_EMAIL: reporter_email})
                 # If the original ticket came from a trusted reporter, set an abuseVerified field
-                elif _is_trusted_reporter and _duplicate_ticket_ids:
+                if _duplicate_ticket_ids:
                     for _ticket_id in _duplicate_ticket_ids:
-                        self._db.update_incident(_ticket_id, {self.KEY_ABUSE_VERIFIED: True})
+                        updates = {'$inc': {self.KEY_REPORT_COUNT: 1}, '$set': {self.KEY_LAST_MODIFIED: datetime.utcnow()}}
+                        if _is_trusted_reporter:
+                            updates['$set'][self.KEY_ABUSE_VERIFIED] = True
+                        self._db._mongo._collection.update_one({'_id': _ticket_id}, updates)
 
             raise Exception(f'{generic_error} There is an existing open ticket.')
 

@@ -47,6 +47,7 @@ spec:
               secretKeyRef:
                 name: svc-snow-v2
                 key: password
+          # TODO CMAPT-5032: remove this
           - name: BROKER_URL
             valueFrom:
               secretKeyRef:
@@ -69,3 +70,14 @@ spec:
                 key: secret
           - name: ELASTIC_APM_ENVIRONMENT
             value: test
+          - name: MULTIPLE_BROKERS
+            valueFrom:
+              secretKeyRef:
+                name: amqp-shared-creds
+                key: multiple_brokers
+          # TODO CMAPT-5032: remove this
+          - name: QUEUE_TYPE
+            valueFrom:
+              configMapKeyRef:
+                name: quorum-migration
+                key: queuetype

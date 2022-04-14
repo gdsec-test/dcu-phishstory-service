@@ -30,7 +30,7 @@ class CeleryConfig:
                            routing_key=app_settings.GDBS_QUEUE, queue_arguments={'x-queue-type': 'quorum'})}
             if app_settings.QUORUM_QUEUE else {'queue': app_settings.GDBS_QUEUE}
     }
-    broker_url = os.getenv('MULTIPLE_BROKERS') if app_settings.QUORUM_QUEUE else os.getenv('BROKER_URL')
+    broker_url = os.getenv('MULTIPLE_BROKERS') if os.getenv('QUORUM_QUEUE') == 'quorum' else os.getenv('SINGLE_BROKER')
 
 
 def get_celery() -> Celery:

@@ -14,7 +14,8 @@ class AppConfig(object):
     COLLECTION = 'incidents'
     EMAIL_COLLECTION = 'acknowledge_email'
     DBURL = os.getenv('MONGO_URL', '')
-    QUORUM_QUEUE = False
+    # TODO CMAPT-5032: remove this
+    QUORUM_QUEUE = os.getenv('QUORUM_QUEUE') == 'quorum'
 
     def __init__(self):
         self.SNOW_PASS = os.getenv('SNOW_PASS', 'snow_pass')
@@ -24,7 +25,6 @@ class AppConfig(object):
         self.DB_USER = parsed_uri['username']
         self.DB_HOST = parsed_uri['nodelist'][0][0]
         self.DATABASE_IMPACTED = strtobool(os.getenv('DATABASE_IMPACTED', 'False'))
-        self.QUORUM_QUEUE = os.getenv('QUORUM_QUEUE') == 'quorum'
 
         self._blacklist_client = MongoClient(self.DBURL, connect=False)
         self._blacklist_db = self._blacklist_client[self.DB]

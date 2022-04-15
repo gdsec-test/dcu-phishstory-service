@@ -63,11 +63,6 @@ spec:
               secretKeyRef:
                 name: amqp-shared-creds
                 key: multiple_brokers
-          - name: BROKER_URL
-            valueFrom:
-              secretKeyRef:
-                name: amqp-connection-string-v2
-                key: url
           - name: MONGO_URL
             valueFrom:
               secretKeyRef:

@@ -14,8 +14,6 @@ class AppConfig(object):
     COLLECTION = 'incidents'
     EMAIL_COLLECTION = 'acknowledge_email'
     DBURL = os.getenv('MONGO_URL', '')
-    # TODO CMAPT-5032: remove this
-    QUORUM_QUEUE = os.getenv('QUORUM_QUEUE') == 'quorum'
 
     def __init__(self):
         self.SNOW_PASS = os.getenv('SNOW_PASS', 'snow_pass')

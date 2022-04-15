@@ -19,17 +19,17 @@ class CeleryConfig:
     worker_hijack_root_logger = False
     WORKER_ENABLE_REMOTE_CONTROL = False
 
-    # TODO CMAPT-5032: remove everything after and including if app_settings.QUORUM_QUEUE for routes and broker_url
+    # TODO CMAPT-5032: set this equal to 'quorum'
+    queue_type = os.getenv('QUORUM_QUEUE')
     task_routes = {
         'run.process': {
-            'queue': Queue(app_settings.GDBS_QUEUE, Exchange(app_settings.GDBS_QUEUE),
-                           routing_key=app_settings.GDBS_QUEUE, queue_arguments={'x-queue-type': 'quorum'})}
-            if app_settings.QUORUM_QUEUE else {'queue': app_settings.MIDDLEWARE_QUEUE},
+            'queue': Queue(app_settings.MIDDLEWARE_QUEUE, Exchange(app_settings.MIDDLEWARE_QUEUE),
+                           routing_key=app_settings.MIDDLEWARE_QUEUE, queue_arguments={'x-queue-type': queue_type})},
         'run.hubstream_sync': {
             'queue': Queue(app_settings.GDBS_QUEUE, Exchange(app_settings.GDBS_QUEUE),
-                           routing_key=app_settings.GDBS_QUEUE, queue_arguments={'x-queue-type': 'quorum'})}
-            if app_settings.QUORUM_QUEUE else {'queue': app_settings.GDBS_QUEUE}
+                           routing_key=app_settings.GDBS_QUEUE, queue_arguments={'x-queue-type': queue_type})}
     }
+    # TODO CMAPT-5032: set this equal to 'MULTIPLE_BROKERS'
     broker_url = os.getenv('MULTIPLE_BROKERS') if os.getenv('QUORUM_QUEUE') == 'quorum' else os.getenv('SINGLE_BROKER')
 
 

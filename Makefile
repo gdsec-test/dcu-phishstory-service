@@ -78,7 +78,7 @@ dev: prep
 prod-deploy: prod
 	@echo "----- deploying $(REPONAME) prod -----"
 	docker push $(DOCKERREPO):$(COMMIT)
-	kubectl --context prod-admin apply -f $(BUILDROOT)/k8s/prod/deployment.yaml
+	kubectl --context prod-dcu apply -f $(BUILDROOT)/k8s/prod/deployment.yaml
 
 .PHONY: ote-deploy
 ote-deploy: ote
@@ -96,7 +96,7 @@ test-deploy: test-env
 dev-deploy: dev
 	@echo "----- deploying $(REPONAME) dev -----"
 	docker push $(DOCKERREPO):dev
-	kubectl --context dev-admin apply -f $(BUILDROOT)/k8s/dev/deployment.yaml
+	kubectl --context dev-dcu apply -f $(BUILDROOT)/k8s/dev/deployment.yaml
 
 .PHONY: clean
 clean:

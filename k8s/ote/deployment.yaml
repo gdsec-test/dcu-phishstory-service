@@ -47,11 +47,22 @@ spec:
               secretKeyRef:
                 name: svc-snow-v2
                 key: password
-          - name: BROKER_URL
+          # TODO CMAPT-5032: remove single_broker and queue_type
+          - name: QUEUE_TYPE
+            valueFrom:
+              configMapKeyRef:
+                name: quorum-migration
+                key: queuetype
+          - name: SINGLE_BROKER
             valueFrom:
               secretKeyRef:
                 name: amqp-connection-string-v2
                 key: url
+          - name: MULTIPLE_BROKERS
+            valueFrom:
+              secretKeyRef:
+                name: amqp-shared-creds
+                key: multiple_brokers_grandma
           - name: MONGO_URL
             valueFrom:
               secretKeyRef:

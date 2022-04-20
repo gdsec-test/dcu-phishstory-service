@@ -1,6 +1,7 @@
 import os
 
 from celery import Celery
+from kombu import Exchange, Queue
 
 from settings import config_by_name
 
@@ -16,12 +17,20 @@ class CeleryConfig:
     imports = 'run'
     worker_send_task_events = False
     worker_hijack_root_logger = False
+    WORKER_ENABLE_REMOTE_CONTROL = False
 
+    # TODO CMAPT-5032: remove this and just set the args equal to 'x-queue-type': 'quorum'
+    queue_args = {'x-queue-type': 'quorum'} if os.getenv('QUEUE_TYPE') == 'quorum' else None
     task_routes = {
-        'run.process': {'queue': app_settings.MIDDLEWARE_QUEUE},
-        'run.hubstream_sync': {'queue': app_settings.GDBS_QUEUE}
+        'run.process': {
+            'queue': Queue(app_settings.MIDDLEWARE_QUEUE, Exchange(app_settings.MIDDLEWARE_QUEUE),
+                           routing_key=app_settings.MIDDLEWARE_QUEUE, queue_arguments=queue_args)},
+        'run.hubstream_sync': {
+            'queue': Queue(app_settings.GDBS_QUEUE, Exchange(app_settings.GDBS_QUEUE),
+                           routing_key=app_settings.GDBS_QUEUE, queue_arguments=queue_args)}
     }
-    broker_url = os.getenv('BROKER_URL')
+    # TODO CMAPT-5032: set this equal to 'MULTIPLE_BROKERS'
+    broker_url = os.getenv('MULTIPLE_BROKERS') if os.getenv('QUEUE_TYPE') == 'quorum' else os.getenv('SINGLE_BROKER')
 
 
 def get_celery() -> Celery:

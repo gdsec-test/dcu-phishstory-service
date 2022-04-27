@@ -17,7 +17,7 @@ class CeleryConfig:
     imports = 'run'
     worker_send_task_events = False
     worker_hijack_root_logger = False
-    WORKER_ENABLE_REMOTE_CONTROL = False
+    WORKER_ENABLE_REMOTE_CONTROL = True
 
     # TODO CMAPT-5032: remove this and just set the args equal to 'x-queue-type': 'quorum'
     queue_args = {'x-queue-type': 'quorum'} if os.getenv('QUEUE_TYPE') == 'quorum' else None

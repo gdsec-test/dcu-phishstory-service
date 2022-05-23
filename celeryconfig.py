@@ -19,8 +19,7 @@ class CeleryConfig:
     worker_hijack_root_logger = False
     WORKER_ENABLE_REMOTE_CONTROL = True
 
-    # TODO CMAPT-5032: remove this and just set the args equal to 'x-queue-type': 'quorum'
-    queue_args = {'x-queue-type': 'quorum'} if os.getenv('QUEUE_TYPE') == 'quorum' else None
+    queue_args = {'x-queue-type': 'quorum'}
     task_routes = {
         'run.process': {
             'queue': Queue(app_settings.MIDDLEWARE_QUEUE, Exchange(app_settings.MIDDLEWARE_QUEUE),
@@ -29,8 +28,7 @@ class CeleryConfig:
             'queue': Queue(app_settings.GDBS_QUEUE, Exchange(app_settings.GDBS_QUEUE),
                            routing_key=app_settings.GDBS_QUEUE, queue_arguments=queue_args)}
     }
-    # TODO CMAPT-5032: set this equal to 'MULTIPLE_BROKERS'
-    broker_url = os.getenv('MULTIPLE_BROKERS') if os.getenv('QUEUE_TYPE') == 'quorum' else os.getenv('SINGLE_BROKER')
+    broker_url = os.getenv('MULTIPLE_BROKERS')
 
 
 def get_celery() -> Celery:

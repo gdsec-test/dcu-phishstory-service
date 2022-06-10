@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../base
+
+namespace: abuse-api-prod
+images:
+- name: docker-dcu-local.artifactory.secureserver.net/phishstory-service
+  newTag: dev
+replicas:
+  - count: 2
+    name: phishstory-service
+
+configMapGenerator:
+- literals:
+  - sysenv=prod
+  - DATABASE_IMPACTED='False'
+  - ELASTIC_APM_ENVIRONMENT=prod
+  name: env-specific-values

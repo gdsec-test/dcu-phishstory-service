@@ -6,7 +6,7 @@ resources:
 namespace: abuse-api-prod
 images:
 - name: docker-dcu-local.artifactory.secureserver.net/phishstory-service
-  newTag: dev
+  newTag: prod
 replicas:
   - count: 2
     name: phishstory-service

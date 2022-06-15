@@ -44,8 +44,15 @@ class ProductionAppConfig(AppConfig):
     SNOW_URL = 'https://godaddy.service-now.com/api/now/table'
     MIDDLEWARE_QUEUE = 'dcumiddleware'
     GDBS_QUEUE = 'gdbrandservice'
-    EXEMPT_REPORTERS = {'Sucuri': '395146638', 'DBP': '290638894', 'PhishLabs': '129092584'}
-    TRUSTED_REPORTERS = {'375006196'}  # Threat Hunting
+    EXEMPT_REPORTERS = {
+        'Sucuri': '395146638',
+        'Sucuri-CID': 'ba65fc4d-50ba-4032-a455-1546ab723e30',
+        'DBP': '290638894',
+        'DBP-CID': 'e8cc2595-9148-4ef1-8d1c-6d3b97a68642',
+        'PhishLabs': '129092584',
+        'PhishLabs-CID': 'c9fa98e5-55bd-42cb-b126-aa0623233a55'
+    }
+    TRUSTED_REPORTERS = {'375006196', '156fc219-a370-4f03-856a-41522d8d6242'}  # Threat Hunting
     SNOW_USER = 'dcuapiv2'
 
     def __init__(self):
@@ -56,8 +63,14 @@ class OTEAppConfig(AppConfig):
     SNOW_URL = 'https://godaddytest.service-now.com/api/now/table'
     MIDDLEWARE_QUEUE = 'otedcumiddleware'
     GDBS_QUEUE = 'otegdbrandservice'
-    EXEMPT_REPORTERS = {'Sucuri': '1500631816', 'DBP': '1500495186', 'PhishLabs': '908557'}
-    TRUSTED_REPORTERS = {'1500602948'}  # Threat Hunting
+    EXEMPT_REPORTERS = {
+        'Sucuri': '1500631816',
+        'Sucuri-CID': 'df5aa0ef-175f-41ed-820c-4fd96059f7a9',
+        'DBP': '1500495186',
+        'DBP-CID': 'd62c4848-2290-43c2-bd3a-133c376cfd94',
+        'PhishLabs': '908557'
+    }
+    TRUSTED_REPORTERS = {'1500602948', '368438c0-e7fe-4824-95be-cfc3f510c070'}  # Threat Hunting
 
     def __init__(self):
         super(OTEAppConfig, self).__init__()
@@ -78,8 +91,8 @@ class DevelopmentAppConfig(AppConfig):
     SNOW_URL = 'https://godaddydev.service-now.com/api/now/table'
     MIDDLEWARE_QUEUE = 'devdcumiddleware'
     GDBS_QUEUE = 'devgdbrandservice'
-    EXEMPT_REPORTERS = {'dcuapi_test_dev': '1054985'}
-    TRUSTED_REPORTERS = {'4134470'}  # Threat Hunting
+    EXEMPT_REPORTERS = {'dcuapi_test_dev': '1054985', 'dcuapi_test_dev-CID': '5750691d-d120-42a0-8f84-2abf118630df'}
+    TRUSTED_REPORTERS = {'4134470', '88b4be6d-875c-4c21-9b11-d81a8c3e0232'}  # Threat Hunting
 
     def __init__(self):
         super(DevelopmentAppConfig, self).__init__()

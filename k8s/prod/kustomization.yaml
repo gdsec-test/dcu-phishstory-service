@@ -8,8 +8,8 @@ images:
 - name: docker-dcu-local.artifactory.secureserver.net/phishstory-service
   newTag: prod
 replicas:
-  - count: 2
-    name: phishstory-service
+- count: 2
+  name: phishstory-service
 
 configMapGenerator:
 - literals:

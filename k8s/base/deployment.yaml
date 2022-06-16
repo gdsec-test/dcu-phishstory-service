@@ -3,11 +3,10 @@ apiVersion: "apps/v1"
 kind: "Deployment"
 metadata:
   name: "phishstory-service"
-  namespace: "abuse-api-prod"
   labels:
     app: "phishstory-service"
 spec:
-  replicas: 2
+  replicas: 1
   revisionHistoryLimit: 2
   selector:
     matchLabels:
@@ -23,8 +22,10 @@ spec:
       containers:
         -
           name: "phishstory-service"
-          imagePullPolicy: "Always"
-          image: "docker-dcu-local.artifactory.secureserver.net/phishstory-service:REPLACE_WITH_GIT_COMMIT"
+          image: "docker-dcu-local.artifactory.secureserver.net/phishstory-service"
+          envFrom:
+            - configMapRef:
+                name: env-specific-values
           livenessProbe:
             tcpSocket:
               port: 50051
@@ -36,12 +37,6 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           env:
-          - name: sysenv
-            value: prod
-          - name: DATABASE_IMPACTED
-            value: 'False'
-          - name: BUILD_DATE
-            value: 'THIS_STRING_IS_REPLACED_DURING_BUILD'
           - name: SNOW_PASS
             valueFrom:
               secretKeyRef:
@@ -55,7 +50,7 @@ spec:
           - name: MONGO_URL
             valueFrom:
               secretKeyRef:
-                name: mongodb-connection-string-v2 
+                name: mongodb-connection-string
                 key: url
           - name: ELASTIC_APM_SERVER_URL
             valueFrom:
@@ -67,5 +62,4 @@ spec:
               secretKeyRef:
                 name: apm-access
                 key: secret
-          - name: ELASTIC_APM_ENVIRONMENT
-            value: prod
+

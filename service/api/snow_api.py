@@ -203,7 +203,6 @@ class SNOWAPI(DataStore):
         if args.get(self.KEY_CLOSED):
             self._logger.info(f'Closing ticket {ticket_id} with close_reason {args.get(self.KEY_CLOSE_REASON)}.')
             self._db.close_incident(ticket_id, dict(close_reason=args.get(self.KEY_CLOSE_REASON)))
-        self.__sync_to_hubstream(ticket_id)
 
     def get_tickets(self, args):
         """
@@ -344,11 +343,3 @@ class SNOWAPI(DataStore):
             celery.send_task('run.process', (payload,))
         except Exception as e:
             self._logger.error(f'Unable to send payload to Middleware {payload} {e}.')
-
-    def __sync_to_hubstream(self, ticket_id: str) -> None:
-        try:
-            self._logger.info(f'Sending payload to GDBS {ticket_id} for Hubstream sync')
-            celery = get_celery()
-            celery.send_task('run.hubstream_sync', ({self.KEY_TICKET_ID: ticket_id},))
-        except Exception as e:
-            self._logger.error(f'Error sending payload to GDBS {ticket_id} for Hubstream sync {e}')

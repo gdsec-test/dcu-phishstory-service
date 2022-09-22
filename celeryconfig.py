@@ -23,10 +23,7 @@ class CeleryConfig:
     task_routes = {
         'run.process': {
             'queue': Queue(app_settings.MIDDLEWARE_QUEUE, Exchange(app_settings.MIDDLEWARE_QUEUE),
-                           routing_key=app_settings.MIDDLEWARE_QUEUE, queue_arguments=queue_args)},
-        'run.hubstream_sync': {
-            'queue': Queue(app_settings.GDBS_QUEUE, Exchange(app_settings.GDBS_QUEUE),
-                           routing_key=app_settings.GDBS_QUEUE, queue_arguments=queue_args)}
+                           routing_key=app_settings.MIDDLEWARE_QUEUE, queue_arguments=queue_args)}
     }
     broker_url = os.getenv('MULTIPLE_BROKERS')
 

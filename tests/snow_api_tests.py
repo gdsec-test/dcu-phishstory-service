@@ -191,7 +191,6 @@ class TestSNOWAPI(TestCase):
                                                 'close_reason': 'false_positive'}))
         _get_sys_id.assert_called()
         patch_request.assert_called()
-        celery.return_value.send_task.assert_called_with('run.hubstream_sync', ({'ticketId': 'test-ticket'},))
 
     def test_update_ticket_db_downtime(self):
         assert_raises(Exception, self._api.update_ticket)

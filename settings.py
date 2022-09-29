@@ -53,7 +53,7 @@ class ProductionAppConfig(AppConfig):
         'PhishLabs-CID': 'c9fa98e5-55bd-42cb-b126-aa0623233a55'
     }
     TRUSTED_REPORTERS = {'375006196', '156fc219-a370-4f03-856a-41522d8d6242'}  # Threat Hunting
-    SNOW_USER = 'dcuapiv2'
+    SNOW_USER = 'dcuapiv3'
 
     def __init__(self):
         super(ProductionAppConfig, self).__init__()

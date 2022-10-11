@@ -9,11 +9,24 @@ USER root
 EXPOSE 50051
 
 # Move files to new directory in docker container
-COPY ./*.ini ./*.sh ./run.py ./*.py /app/
-COPY . /tmp
-RUN chown dcu:dcu -R /app
+RUN mkdir -p /tmp/build
+COPY requirements.txt /tmp/build/
+COPY pip_config /tmp/build/pip_config
+RUN PIP_CONFIG_FILE=/tmp/build/pip_config/pip.conf pip install -r /tmp/build/requirements.txt
 
-RUN PIP_CONFIG_FILE=/tmp/pip_config/pip.conf pip install --compile /tmp && rm -rf /tmp/*
+COPY *.py /tmp/build/
+COPY test_requirements.txt /tmp/build/
+COPY README.md /tmp/build/
+COPY pb /tmp/build/pb
+COPY service /tmp/build/service
+
+# pip install private pips staged by Makefile
+RUN PIP_CONFIG_FILE=/tmp/pip_config/pip.conf pip install --compile /tmp/build
+
+COPY ./*.ini ./*.sh ./run.py ./*.py /app/
+# cleanup
+RUN rm -rf /tmp/build
+RUN chown dcu:dcu -R /app
 
 USER dcu
 ENTRYPOINT ["/app/runserver.sh"]

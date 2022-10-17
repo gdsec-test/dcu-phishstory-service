@@ -137,6 +137,7 @@ class SNOWAPI(DataStore):
         if not self._db_impacted:
             args[self.KEY_TICKET_ID] = snow_data[self.KEY_RESULT][self.KEY_U_NUMBER]
             json_for_middleware = {key: args.get(key, None) for key in MIDDLEWARE_MODEL}
+            json_for_middleware['reporting_customer_id'] = args.get('reporting_customer_id')
 
             # The metadata sub-document to contain the fraud_score key
             if args.get(self.KEY_METADATA):
